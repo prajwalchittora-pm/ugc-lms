@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, ChevronRight, ChevronDown, MonitorPlay, BookOpenText, MessageSquare, ClipboardCheck, Video, CheckCircle2, AlertTriangle, Plus, GraduationCap, Users, BookOpen, X, Clock, CalendarRange, Filter, Upload, UserPlus, ShieldCheck, Mail, Check, GripVertical, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import { PROGRAMME_BATCHES, ProgrammeBatch, CoordinatorCourse, ProgrammeType, getProgrammeTypeColor } from '@/lib/coordinatorData';
 import CourseEditor from './CourseEditor';
@@ -1466,11 +1467,34 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
 // ─── Main CoursesView ───────────────────────────────────────────────────────
 
 export default function CoursesView() {
+  const searchParams = useSearchParams();
   const [programmes, setProgrammes] = useState(PROGRAMME_BATCHES);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProgramme, setSelectedProgramme] = useState<ProgrammeBatch | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<CoordinatorCourse | null>(null);
+  const [deepLinkedActivity, setDeepLinkedActivity] = useState<string | null>(null);
+
+  // Deep-link: auto-navigate to a specific course/activity via URL params
+  // e.g. /coordinator/courses?course=MBA-101&activity=lp-ls2
+  useEffect(() => {
+    const courseParam = searchParams.get('course');
+    const activityParam = searchParams.get('activity');
+    if (courseParam && !selectedCourse) {
+      // Find the programme and course
+      for (const prog of PROGRAMME_BATCHES) {
+        for (const sem of prog.semesters) {
+          const course = sem.courses.find(c => c.code === courseParam);
+          if (course) {
+            setSelectedProgramme(prog);
+            setSelectedCourse(course);
+            if (activityParam) setDeepLinkedActivity(activityParam);
+            return;
+          }
+        }
+      }
+    }
+  }, [searchParams]);
 
   if (selectedCourse && selectedProgramme) {
     return (
@@ -1483,7 +1507,7 @@ export default function CoursesView() {
           ]} />
         </div>
         <div style={{ height: 'calc(100% - 48px)' }}>
-          <CourseEditor courseTitle={selectedCourse.title} courseCode={selectedCourse.code} onBack={() => setSelectedCourse(null)} />
+          <CourseEditor courseTitle={selectedCourse.title} courseCode={selectedCourse.code} onBack={() => setSelectedCourse(null)} initialActivityId={deepLinkedActivity} />
         </div>
       </div>
     );

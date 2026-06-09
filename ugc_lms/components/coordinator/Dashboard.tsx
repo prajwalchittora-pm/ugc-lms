@@ -11,9 +11,9 @@ interface ForumPost { id: string; title: string; course: string; author: string;
 interface Announcement { id: string; title: string; body: string; programme: string; programmeLabel: string; time: string; pinned: boolean; }
 
 const UPCOMING: UpcomingEvent[] = [
-  { id: 'u1', title: 'Business Statistics Project Due', day: 8, month: 'Jun', time: '11:59 PM', type: 'assignment', daysLeft: 0, course: 'MBA-105', context: '4/20 submitted', href: '/coordinator/courses' },
-  { id: 'u2', title: 'Counselling Session — Managerial Economics', day: 9, month: 'Jun', time: '10:00 AM', type: 'live_session', daysLeft: 0, course: 'MBA-101', context: 'Dr. Anita Desai', href: '/coordinator/courses' },
-  { id: 'u3', title: 'Module 3 Quiz — Business Law', day: 10, month: 'Jun', time: '9:00 AM', type: 'quiz', daysLeft: 1, course: 'MBA-106', context: 'Published', href: '/coordinator/courses' },
+  { id: 'u1', title: 'Business Statistics Project Due', day: 8, month: 'Jun', time: '11:59 PM', type: 'assignment', daysLeft: 0, course: 'MBA-105', context: '4/20 submitted', href: '/coordinator/grading' },
+  { id: 'u2', title: 'Counselling Session — Managerial Economics', day: 9, month: 'Jun', time: '10:00 AM', type: 'live_session', daysLeft: 0, course: 'MBA-101', context: 'Dr. Anita Desai', href: '/coordinator/courses?course=MBA-101&activity=lp-ls2' },
+  { id: 'u3', title: 'Module 3 Quiz — Business Law', day: 10, month: 'Jun', time: '9:00 AM', type: 'quiz', daysLeft: 1, course: 'MBA-106', context: 'Published', href: '/coordinator/courses?course=MBA-101&activity=lp-10' },
   { id: 'u4', title: 'End Sem — Managerial Economics', day: 15, month: 'Jun', time: '10:00 AM', type: 'exam', daysLeft: 6, course: 'MBA-101', context: '106/124 eligible', href: '/coordinator/exams' },
   { id: 'u5', title: 'End Sem — Managerial Communication', day: 17, month: 'Jun', time: '10:00 AM', type: 'exam', daysLeft: 8, course: 'MBA-102', context: '118/124 eligible', href: '/coordinator/exams' },
 ];

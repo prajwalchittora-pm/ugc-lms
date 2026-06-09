@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Clock, Search, BarChart3, Users, Award, AlertTriangle, CircleDot, FileText, HelpCircle, ClipboardList } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Clock, Search, BarChart3, Users, Award, AlertTriangle, CircleDot, FileText, HelpCircle, ClipboardList, Download, Send, Star } from 'lucide-react';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -32,6 +32,16 @@ interface StudentResult {
   submittedAt: string | null;
   timeTaken: string | null;
   attempts: number;
+}
+
+interface AssignmentSubmission {
+  studentId: string;
+  fileName: string;
+  fileSize: string;
+  wordCount: number;
+  plagiarismScore: number;
+  submittedAt: string;
+  lateSubmission: boolean;
 }
 
 interface QuizAnswer {
@@ -100,6 +110,12 @@ const QUIZ_ANSWERS: Record<string, QuizAnswer[]> = {
 
 // ─── Status helpers ────────────────────────────────────────────────────────
 
+const ASSIGNMENT_SUBMISSIONS: Record<string, AssignmentSubmission> = {
+  's1': { studentId: 's1', fileName: 'Arjun_Mehta_Case_Study.pdf', fileSize: '2.4 MB', wordCount: 2840, plagiarismScore: 12, submittedAt: '7 Jun, 12:30 PM', lateSubmission: false },
+  's2': { studentId: 's2', fileName: 'Priya_Sharma_Case_Study.pdf', fileSize: '3.1 MB', wordCount: 3200, plagiarismScore: 8, submittedAt: '7 Jun, 10:15 AM', lateSubmission: false },
+  's3': { studentId: 's3', fileName: 'Kavya_Menon_Market_Entry.pdf', fileSize: '1.8 MB', wordCount: 2650, plagiarismScore: 15, submittedAt: '7 Jun, 9:00 AM', lateSubmission: false },
+};
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   passed: { label: 'Passed', color: '#059669', bg: 'rgba(5,150,105,0.06)' },
   failed: { label: 'Failed', color: '#DC2626', bg: 'rgba(220,38,38,0.06)' },
@@ -115,8 +131,237 @@ export default function AssessmentAnalytics() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'quiz' | 'assignment'>('all');
 
-  // ─── Level 3: Quiz Attempt Review ──────────────────────────────────────
+  const [gradeInput, setGradeInput] = useState('');
+  const [feedbackInput, setFeedbackInput] = useState('');
+
+  // ─── Level 3: Review (Quiz or Assignment) ─────────────────────────────
   if (selectedAssessment && selectedStudent) {
+
+    // ─── ASSIGNMENT SUBMISSION REVIEW ──────────────────────────────────
+    if (selectedAssessment.type === 'assignment') {
+      const submission = ASSIGNMENT_SUBMISSIONS[selectedStudent.id];
+      const plagColor = (submission?.plagiarismScore ?? 0) <= 15 ? '#059669' : (submission?.plagiarismScore ?? 0) <= 30 ? '#D97706' : '#DC2626';
+
+      return (
+        <div style={{ padding: '28px 36px' }}>
+          {/* Back */}
+          <button onClick={() => setSelectedStudent(null)} style={{
+            display: 'flex', alignItems: 'center', gap: 5, padding: 0, marginBottom: 20,
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 13, fontWeight: 600, color: 'var(--blue-700)', fontFamily: 'var(--font-sans)',
+          }}>
+            <ChevronLeft size={15} /> Back to submissions
+          </button>
+
+          {/* Student header — light */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '18px 22px', marginBottom: 20,
+            background: '#fff', border: '1px solid rgba(15,15,15,0.08)',
+            borderRadius: 12,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--bg-section)', border: '1.5px solid var(--border-subtle)', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                {selectedStudent.initials}
+              </div>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>{selectedStudent.name}</h2>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>{selectedStudent.rollNo} · {selectedAssessment.title}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {selectedStudent.score !== null && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#059669', fontFamily: 'var(--font-mono)' }}>{selectedStudent.score}<span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>/{selectedStudent.maxMarks}</span></div>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Graded</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Split layout: PDF viewer + grading sidebar */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20, alignItems: 'start' }}>
+
+            {/* LEFT: PDF Viewer */}
+            <div style={{
+              background: '#fff', borderRadius: 14, border: '2px solid rgba(15,15,15,0.45)',
+              overflow: 'hidden',
+            }}>
+              {/* PDF toolbar */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 18px', background: 'var(--bg-section)', borderBottom: '1px solid var(--border-subtle)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FileText size={15} style={{ color: 'var(--text-tertiary)' }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{submission?.fileName || 'Submission.pdf'}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{submission?.fileSize}</span>
+                </div>
+                <button style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '5px 12px', fontSize: 11, fontWeight: 600,
+                  color: 'var(--text-secondary)', background: '#fff',
+                  border: '1px solid var(--border-subtle)', borderRadius: 6, cursor: 'pointer',
+                }}>
+                  <Download size={12} /> Download
+                </button>
+              </div>
+
+              {/* PDF content area (mock) */}
+              <div style={{
+                minHeight: 500, padding: '40px',
+                background: '#fff',
+                display: 'flex', flexDirection: 'column', gap: 20,
+              }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+                  {selectedAssessment.title}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 12 }}>
+                  Submitted by {selectedStudent.name} · {selectedStudent.rollNo} · {submission?.submittedAt}
+                </div>
+                {/* Mock PDF content */}
+                <div style={{ lineHeight: 1.8, fontSize: 13.5, color: 'var(--text-secondary)' }}>
+                  <p style={{ margin: '0 0 16px' }}><strong>1. Introduction</strong></p>
+                  <p style={{ margin: '0 0 12px' }}>This case study examines the strategic considerations for market entry into emerging economies, with a focus on the Indian consumer goods sector. The analysis draws upon Porter's Five Forces framework and the Uppsala internationalization model to evaluate...</p>
+                  <p style={{ margin: '0 0 16px' }}><strong>2. Industry Analysis</strong></p>
+                  <p style={{ margin: '0 0 12px' }}>The Indian FMCG market has grown at a CAGR of 14.9% over the past five years, driven by rising disposable incomes and urbanization. However, the competitive landscape remains fragmented with both multinational and domestic players...</p>
+                  <p style={{ margin: '0 0 16px' }}><strong>3. Strategic Recommendations</strong></p>
+                  <p style={{ margin: '0 0 12px' }}>Based on the analysis, a phased market entry approach is recommended. Phase 1 involves establishing distribution partnerships in Tier-1 cities. Phase 2 expands to Tier-2 markets through an acquisition strategy...</p>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontStyle: 'italic', paddingTop: 8, borderTop: '1px solid var(--border-subtle)' }}>
+                  {submission?.wordCount} words · Page 1 of 8
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Grading Sidebar */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+              {/* Submission info card */}
+              <div style={{ background: '#fff', borderRadius: 12, border: '1px solid rgba(15,15,15,0.08)', padding: '18px 20px' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Submission</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                    <span style={{ color: 'var(--text-tertiary)' }}>Submitted</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{submission?.submittedAt || '—'}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                    <span style={{ color: 'var(--text-tertiary)' }}>Word count</span>
+                    <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{submission?.wordCount || '—'}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                    <span style={{ color: 'var(--text-tertiary)' }}>Late submission</span>
+                    <span style={{ fontWeight: 600, color: submission?.lateSubmission ? '#DC2626' : '#059669' }}>{submission?.lateSubmission ? 'Yes' : 'No'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Plagiarism card */}
+              <div style={{ background: '#fff', borderRadius: 12, border: '1px solid rgba(15,15,15,0.08)', padding: '18px 20px' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Plagiarism Check</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: '50%',
+                    border: `3px solid ${plagColor}`,
+                    display: 'grid', placeItems: 'center',
+                    fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-mono)', color: plagColor,
+                  }}>
+                    {submission?.plagiarismScore ?? 0}%
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: plagColor }}>
+                      {(submission?.plagiarismScore ?? 0) <= 15 ? 'Low similarity' : (submission?.plagiarismScore ?? 0) <= 30 ? 'Moderate' : 'High similarity'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2 }}>
+                      {(submission?.plagiarismScore ?? 0) <= 15 ? 'Within acceptable range' : 'Review recommended'}
+                    </div>
+                  </div>
+                </div>
+                <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 12, fontSize: 12, fontWeight: 600, color: 'var(--blue-700)', textDecoration: 'none' }}
+                  onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline'; }}
+                  onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none'; }}
+                >
+                  View Full Report <ChevronRight size={13} />
+                </a>
+              </div>
+
+              {/* Grade form */}
+              <div style={{
+                background: '#fff', borderRadius: 12,
+                border: selectedStudent.score !== null ? '1px solid rgba(5,150,105,0.15)' : '2px solid rgba(7,47,181,0.2)',
+                padding: '18px 20px',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14 }}>
+                  {selectedStudent.score !== null ? 'Grade (submitted)' : 'Grade this submission'}
+                </div>
+
+                {/* Grade input */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Score</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      type="number" min={0} max={selectedAssessment.maxMarks}
+                      placeholder={selectedStudent.score !== null ? String(selectedStudent.score) : '0'}
+                      value={gradeInput}
+                      onChange={e => setGradeInput(e.target.value)}
+                      style={{
+                        width: 80, padding: '10px 12px', fontSize: 18, fontWeight: 800,
+                        fontFamily: 'var(--font-mono)', color: 'var(--text-primary)',
+                        background: 'var(--bg-section)', border: '1.5px solid transparent',
+                        borderRadius: 8, outline: 'none', textAlign: 'center',
+                        transition: 'border-color 0.15s, box-shadow 0.15s, background 0.15s',
+                      }}
+                      onFocus={e => { e.currentTarget.style.borderColor = '#072FB5'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(7,47,181,0.12)'; e.currentTarget.style.background = '#fff'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'var(--bg-section)'; }}
+                    />
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-tertiary)' }}>/ {selectedAssessment.maxMarks}</span>
+                  </div>
+                </div>
+
+                {/* Feedback */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Feedback</label>
+                  <textarea
+                    placeholder="Provide feedback to the student..."
+                    value={feedbackInput}
+                    onChange={e => setFeedbackInput(e.target.value)}
+                    rows={4}
+                    style={{
+                      width: '100%', padding: '10px 12px', fontSize: 13,
+                      fontFamily: 'var(--font-sans)', color: 'var(--text-primary)',
+                      background: 'var(--bg-section)', border: '1.5px solid transparent',
+                      borderRadius: 8, outline: 'none', boxSizing: 'border-box',
+                      resize: 'vertical', lineHeight: 1.6,
+                      transition: 'border-color 0.15s, box-shadow 0.15s, background 0.15s',
+                    }}
+                    onFocus={e => { e.currentTarget.style.borderColor = '#072FB5'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(7,47,181,0.12)'; e.currentTarget.style.background = '#fff'; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'var(--bg-section)'; }}
+                  />
+                </div>
+
+                {/* Submit button */}
+                <button style={{
+                  width: '100%', padding: '10px', fontSize: 13, fontWeight: 700,
+                  color: '#fff', background: '#072FB5',
+                  border: 'none', borderRadius: 8, cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  boxShadow: '0 2px 8px rgba(7,47,181,0.3)',
+                  transition: 'opacity 0.12s',
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+                >
+                  <Send size={14} /> Submit Grade
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── QUIZ ATTEMPT REVIEW ────────────────────────────────────────────
     const answers = QUIZ_ANSWERS[selectedStudent.id] || [];
     const totalEarned = answers.reduce((s, a) => s + a.points, 0);
     const totalMax = answers.reduce((s, a) => s + a.maxPoints, 0);

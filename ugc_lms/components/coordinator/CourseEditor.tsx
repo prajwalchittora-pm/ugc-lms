@@ -5,6 +5,7 @@ import VideoActivity from '@/components/learn/VideoActivity';
 import PageActivity from '@/components/learn/PageActivity';
 import QuizActivity from '@/components/learn/QuizActivity';
 import QuizEditor from './QuizEditor';
+import LiveSessionActivity from './LiveSessionActivity';
 import PdfActivity from '@/components/learn/PdfActivity';
 import AddActivityModal from './AddActivityModal';
 import ActivitySettingsModal from './ActivitySettingsModal';
@@ -427,12 +428,18 @@ const MIN_WIDTH = 280;
 const MAX_WIDTH = 560;
 const DEFAULT_WIDTH = 380;
 
-export default function CourseEditor({ courseTitle, courseCode, onBack }: { courseTitle: string; courseCode: string; onBack: () => void }) {
+export default function CourseEditor({ courseTitle, courseCode, onBack, initialActivityId }: { courseTitle: string; courseCode: string; onBack: () => void; initialActivityId?: string | null }) {
   const [units, setUnits] = useState<Unit[]>(INITIAL_UNITS);
   const [editMode, setEditMode] = useState(true);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedActIds, setSelectedActIds] = useState<Set<string>>(new Set());
-  const [selectedActivityId, setSelectedActivityId] = useState<string>('lp-6');
+  const [selectedActivityId, setSelectedActivityId] = useState<string>(() => {
+    if (initialActivityId) {
+      const exists = INITIAL_UNITS.some(u => u.quadrants.some(q => q.activities.some(a => a.id === initialActivityId)));
+      if (exists) return initialActivityId;
+    }
+    return 'lp-6';
+  });
 
   const [hiddenActivities, setHiddenActivities] = useState<Set<string>>(new Set());
   const [lockedActivities, setLockedActivities] = useState<Set<string>>(new Set());
@@ -453,6 +460,9 @@ export default function CourseEditor({ courseTitle, courseCode, onBack }: { cour
 
   const allActivities = units.flatMap(u => u.quadrants.flatMap(q => q.activities));
   const selectedActivity = allActivities.find(a => a.id === selectedActivityId) ?? allActivities[0];
+
+  // Check if selected activity is a live session (lives in live_session quadrant)
+  const isLiveSession = units.some(u => u.quadrants.some(q => q.type === 'live_session' && q.activities.some(a => a.id === selectedActivityId)));
   const selectedIdx = allActivities.findIndex(a => a.id === selectedActivityId);
 
   const totalActivities = allActivities.length;
@@ -740,7 +750,19 @@ export default function CourseEditor({ courseTitle, courseCode, onBack }: { cour
           </div>
         )}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          {selectedActivity?.type === 'video' && <VideoActivity activity={selectedActivity as any} courseId="editor" {...activityProps} />}
+          {isLiveSession && selectedActivity && (
+            <LiveSessionActivity
+              title={selectedActivity.title}
+              date={selectedActivity.done ? '2 Jun 2026' : '15 Jun 2026'}
+              time="10:00 AM"
+              duration={selectedActivity.duration}
+              faculty="Dr. Anita Desai"
+              status={selectedActivity.done ? 'recording_available' : 'upcoming'}
+              daysUntil={selectedActivity.done ? 0 : 6}
+              isCoordinator={true}
+            />
+          )}
+          {selectedActivity?.type === 'video' && !isLiveSession && <VideoActivity activity={selectedActivity as any} courseId="editor" {...activityProps} />}
           {selectedActivity?.type === 'page' && <PageActivity activity={selectedActivity as any} {...activityProps} />}
           {selectedActivity?.type === 'pdf' && <PdfActivity activity={selectedActivity as any} {...activityProps} />}
           {selectedActivity?.type === 'quiz' && (

@@ -122,20 +122,25 @@ Shows the **next 5 chronological events** as a horizontal row of cards.
 
 | Type | Context shown | Example | Why the coordinator cares | What they might do |
 |------|--------------|---------|--------------------------|-------------------|
-| Assignment | Submission progress | "4/20 submitted" | Low submission rate near deadline = students may need a reminder or deadline extension | Extend deadline, send reminder announcement |
+| Assignment | Submission progress | "4/20 submitted" | Due date has passed and grade-by date is approaching — coordinator needs to check submissions and grade or delegate to faculty | Grade submissions, remind faculty to grade, extend deadline if needed |
 | Quiz | Publication status | "Published" or "Draft" | A draft quiz approaching its open date needs to be published or students can't take it | Review and publish the quiz |
 | Exam | Eligibility count | "106/124 eligible" | Per UGC regulations, students below 75% engagement are ineligible. Coordinator needs to know how many can sit for the exam | Review at-risk students, process exemption requests |
 | Live Session | Assigned faculty | "Dr. Anita Desai" | Confirms the session has a faculty member assigned and is ready to proceed | Verify setup, join session |
 
-**Click behavior:** Each card is clickable and navigates to the **activity's page in the course editor** — the coordinator lands on the specific activity in context, with the settings gear visible to make changes if needed.
+**Click behavior — deep-link navigation per event type:**
 
-Route: `/coordinator/courses?course={courseId}&activity={activityId}` — opens the course editor with the sidebar scrolled to and highlighting the specific activity.
+| Type | Navigates to | What the coordinator sees | What they can do |
+|------|-------------|--------------------------|-----------------|
+| **Assignment** | `/coordinator/grading` | Grading page with submissions | See who submitted, grade, extend deadline, send reminders |
+| **Live Session** | `/coordinator/courses?course={code}&activity={id}` | LiveSessionActivity view with session details | See countdown, "Host Session" button (greyed until 10 min before), settings gear |
+| **Quiz** | `/coordinator/courses?course={code}&activity={id}` | QuizEditor (edit mode) or quiz preview | Configure questions, timing, publish status via settings gear |
+| **Exam** | `/coordinator/exams` | Exams page with eligibility management | Override eligibility, view exam schedule, manage exemptions |
 
-This ensures the coordinator can:
-- See the activity in the context of its unit and quadrant
-- Click the settings gear to modify deadlines, timing, or other settings
-- Preview the activity as the learner would see it
-- Navigate to adjacent activities if needed
+**Deep-link implementation:**
+- Route uses query params: `?course={courseCode}&activity={activityId}`
+- `CoursesView` reads `useSearchParams()` on mount → auto-finds the matching programme and course → sets them as selected → passes `deepLinkedActivity` to `CourseEditor`
+- `CourseEditor` accepts `initialActivityId` prop → uses it as the starting `selectedActivityId` if the activity exists in the data
+- The sidebar auto-expands the relevant unit and quadrant to show the target activity
 
 **Type tag design:**
 
@@ -149,8 +154,9 @@ This ensures the coordinator can:
 **Why these colors?** The page background is warm beige (`#FDF8F2`). All card gradients use cool tones (green, teal, purple, blue) to create clear contrast. No warm/amber tones (would blend with background). No red (exam ≠ danger — it's a milestone).
 
 **Business logic:**
-- Source: unified query across `exams`, `assignment.due_date`, `quiz.open_date`, and `live_session.scheduled_at` for all programmes the user manages
-- Filter: only future events (date ≥ today)
+- Source: unified query across `exams`, `assignment.grade_by_date`, `quiz.open_date`, and `live_session.scheduled_at` for all programmes the user manages
+- Filter: only future events (date ≥ today), with one exception:
+  - **Assignments appear when the due date has passed but the grade-by date is approaching or not yet passed.** The coordinator doesn't need to see an assignment before it's due (that's the student's concern). They need to see it when submissions have come in and grading needs to happen. The card shows submission progress (e.g., "4/20 submitted") so the coordinator knows whether to wait for more submissions, extend the deadline, or start grading.
 - Sort: ascending by date, then by time
 - Limit: **5 cards** — enough to show this week's horizon without overwhelming. "Full schedule" link provides the complete view
 - No holidays, milestones, or informational items — **only events that require coordinator awareness or student action**
@@ -420,6 +426,38 @@ A 640px modal used for both **creating** and **editing** activity settings. Open
 - Completion defaults to attendance-based (auto-tracked when learner joins)
 - All fields except Invite Emails and fields with defaults are required
 - The same modal and fields are used for both creating a new live session and editing an existing one via the settings gear
+
+**Live Session Activity View** (`LiveSessionActivity.tsx`)
+
+When a live session activity is selected in the course editor, the main panel shows a dedicated live session view instead of the video player. This component has **3 states**:
+
+**State 1: Upcoming (session hasn't happened yet)**
+- Status badge: blue "Scheduled" pill with pulsing dot
+- Session title as large heading
+- Countdown card with blue gradient background: "Session in X days" / "Session is tomorrow" / "Session starts soon"
+- **"Host Session" button** (coordinator) / **"Join Session" button** (learner) — greyed out and disabled until the session is imminent
+- Button activates 10 minutes before the scheduled start time
+- "Available 10 minutes before the session starts" hint text
+- Session details card: date, time, duration (with icons in tinted boxes), faculty with avatar
+
+**State 2: Completed — Recording Available**
+- Status badge: green "Recording Available" pill
+- Video player area with play button, recording duration
+- Session details card (same as upcoming but past-tense context)
+- Attendance section:
+  - Coordinator sees: "18/20 students attended · 90% attendance"
+  - Learner sees: "Present — Joined at 9:58 AM" or "Absent"
+
+**State 3: Completed — Recording Processing**
+- Status badge: amber "Recording Processing" pill
+- Processing placeholder card with amber gradient: spinning loader icon, "Recording is being processed", "Usually takes 30–60 minutes"
+- Session details + attendance (same as state 2)
+
+**Business logic:**
+- Clicking a live session upcoming card on the coordinator dashboard navigates to the course editor with this activity selected
+- The component detects which state to show based on `activity.done` and recording availability
+- Coordinator sees "Host Session" button + attendance summary; learner sees "Join Session" + personal attendance
+- Activities in the `live_session` quadrant render this component; other video-type activities in `e_tutorial` render the standard video player
 
 ---
 

@@ -13,7 +13,7 @@ export default function ContinueLearningCard({ firstTime }: { firstTime?: boolea
       position: 'relative',
       overflow: 'hidden',
       borderRadius: 'var(--radius-md)',
-      background: 'linear-gradient(135deg, #C8DAFF 0%, #EDDCC0 100%)',
+      background: 'linear-gradient(135deg, #E0EAFF 0%, #F5EDE0 100%)',
       border: '2px solid rgba(15,15,15,0.45)',
       boxShadow: 'var(--shadow-sm)',
       transition: 'box-shadow 0.12s ease',
