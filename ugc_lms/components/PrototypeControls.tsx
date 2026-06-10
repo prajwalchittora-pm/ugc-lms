@@ -101,6 +101,42 @@ export default function PrototypeControls() {
                 <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.20)', marginTop: 2 }}>Reset to login screen</div>
               </div>
             </button>
+            <button
+              onClick={() => { localStorage.removeItem('coord_visited'); localStorage.setItem('coord_empty', 'true'); window.dispatchEvent(new CustomEvent('trigger-coord-ftue')); window.dispatchEvent(new CustomEvent('coord-empty-toggle')); setOpen(false); }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 10px', border: 'none', cursor: 'pointer',
+                background: 'transparent', borderLeft: '2px solid transparent',
+                fontFamily: 'ui-monospace, monospace', textAlign: 'left',
+                transition: 'background 0.1s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              <span style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: 'rgba(96,165,250,0.7)' }}/>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.45)', lineHeight: 1.2 }}>First PM (Empty)</div>
+                <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.20)', marginTop: 2 }}>Empty system + FTUE</div>
+              </div>
+            </button>
+            <button
+              onClick={() => { localStorage.removeItem('coord_empty'); localStorage.removeItem('coord_visited'); window.dispatchEvent(new CustomEvent('coord-empty-toggle')); window.dispatchEvent(new CustomEvent('trigger-coord-ftue')); setOpen(false); }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 10px', border: 'none', cursor: 'pointer',
+                background: 'transparent', borderLeft: '2px solid transparent',
+                fontFamily: 'ui-monospace, monospace', textAlign: 'left',
+                transition: 'background 0.1s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              <span style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: 'rgba(74,222,128,0.7)' }}/>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.45)', lineHeight: 1.2 }}>Populated PM + FTUE</div>
+                <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.20)', marginTop: 2 }}>With data + onboarding</div>
+              </div>
+            </button>
           </div>
 
           {/* Hint */}
