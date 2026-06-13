@@ -408,11 +408,131 @@ function CreateProgrammeModal({ onClose, onCreate }: { onClose: () => void; onCr
   );
 }
 
+// ─── Edit Programme Modal ────────────────────────────────────────────────────
+
+function EditProgrammeModal({ programme, onClose, onSave }: { programme: ProgrammeBatch; onClose: () => void; onSave: (p: ProgrammeBatch) => void }) {
+  const [name, setName] = useState(programme.name);
+  const [code, setCode] = useState(programme.code);
+  const [batchYear, setBatchYear] = useState(String(programme.batchYear));
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [type, setType] = useState<ProgrammeType>(programme.type);
+  const [semesters, setSemesters] = useState(String(programme.totalSemesters));
+  const [credits, setCredits] = useState(String(programme.totalCredits));
+
+  const canSave = name && code;
+
+  const fieldStyle = {
+    width: '100%', padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-sans)' as const,
+    fontWeight: 500 as const, color: 'var(--text-primary)',
+    background: 'var(--bg-section)', border: '1.5px solid transparent', borderRadius: 8,
+    outline: 'none', boxSizing: 'border-box' as const, transition: 'border-color 0.15s, box-shadow 0.15s, background 0.15s',
+  };
+  const focus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.currentTarget.style.borderColor = '#072FB5'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(7,47,181,0.12)'; e.currentTarget.style.background = '#fff'; };
+  const blur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'var(--bg-section)'; };
+
+  const handleSave = () => {
+    if (!canSave) return;
+    const shortLabel = `${code}-${batchYear.slice(-2)}`;
+    onSave({ ...programme, name, code, batchYear: parseInt(batchYear) || programme.batchYear, shortLabel, type, totalSemesters: parseInt(semesters) || programme.totalSemesters, totalCredits: parseInt(credits) || programme.totalCredits, color: getProgrammeTypeColor(type), startDate: startDate || programme.startDate, endDate: endDate || programme.endDate });
+    onClose();
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: 540, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)' }}>
+        <div style={{ padding: '24px 28px 22px', background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)', borderRadius: '16px 16px 0 0' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)', display: 'grid', placeItems: 'center' }}>
+                <GraduationCap size={22} strokeWidth={1.8} style={{ color: '#fff' }} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', letterSpacing: '-0.03em' }}>Edit Programme</h3>
+                <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>{programme.shortLabel}</p>
+              </div>
+            </div>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,0.5)' }}><X size={16} /></button>
+          </div>
+          <div style={{ marginTop: 18 }}>
+            <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Programme Name</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} style={{ width: '100%', padding: '12px 16px', fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-display)', color: '#fff', background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.55)', borderRadius: 10, outline: 'none', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }} />
+          </div>
+        </div>
+        <div style={{ padding: '22px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Programme Code</label><input type="text" value={code} onChange={e => setCode(e.target.value)} style={{ ...fieldStyle, fontFamily: 'var(--font-mono)', fontWeight: 700 as const }} onFocus={focus} onBlur={blur} /></div>
+            <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Batch Year</label><input type="number" value={batchYear} onChange={e => setBatchYear(e.target.value)} style={{ ...fieldStyle, fontFamily: 'var(--font-mono)', fontWeight: 700 as const }} onFocus={focus} onBlur={blur} /></div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <SegmentedDateInput label="Start Date" value={startDate} onChange={setStartDate} />
+            <SegmentedDateInput label="End Date" value={endDate} onChange={setEndDate} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Type</label>
+              <select value={type} onChange={e => setType(e.target.value as ProgrammeType)} style={{ ...fieldStyle, cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center', paddingRight: '28px' }} onFocus={focus} onBlur={blur}>
+                <option value="UG">UG</option><option value="PG">PG</option><option value="Diploma">Diploma</option><option value="Certificate">Certificate</option>
+              </select>
+            </div>
+            <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Semesters</label><input type="number" value={semesters} onChange={e => setSemesters(e.target.value)} style={{ ...fieldStyle, fontFamily: 'var(--font-mono)', fontWeight: 700 as const }} onFocus={focus} onBlur={blur} /></div>
+            <div><label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Total Credits</label><input type="number" value={credits} onChange={e => setCredits(e.target.value)} style={{ ...fieldStyle, fontFamily: 'var(--font-mono)', fontWeight: 700 as const }} onFocus={focus} onBlur={blur} /></div>
+          </div>
+        </div>
+        <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8, background: '#FAFAFA' }}>
+          <button onClick={onClose} style={{ padding: '9px 20px', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+          <button onClick={handleSave} disabled={!canSave} style={{ padding: '9px 24px', fontSize: 13, fontWeight: 700, color: '#fff', background: canSave ? '#072FB5' : 'var(--border-subtle)', border: 'none', borderRadius: 8, cursor: canSave ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-sans)' }}>Save Changes</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Programme Row Actions Menu ───────────────────────────────────────────────
+
+function ProgActionsMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+  return (
+    <div ref={ref} style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+      <button onClick={() => setOpen(v => !v)} style={{ width: 28, height: 28, borderRadius: 6, background: open ? 'var(--bg-section)' : 'transparent', border: '1px solid', borderColor: open ? 'var(--border-subtle)' : 'transparent', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--text-tertiary)' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-section)'; e.currentTarget.style.borderColor = 'var(--border-subtle)'; }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; } }}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="2.5" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="7" cy="11.5" r="1.2"/></svg>
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 60, background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', minWidth: 140, overflow: 'hidden' }}>
+          <button onClick={() => { setOpen(false); onEdit(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '9px 14px', fontSize: 12.5, fontWeight: 500, color: 'var(--text-primary)', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', textAlign: 'left' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-section)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <button onClick={() => { setOpen(false); onDelete(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '9px 14px', fontSize: 12.5, fontWeight: 500, color: '#DC2626', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', textAlign: 'left' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.04)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Level 1: Programme List ────────────────────────────────────────────────
 
-function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCreate }: {
+function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCreate, onEdit, onDelete }: {
   programmes: ProgrammeBatch[]; searchQuery: string; onSearchChange: (v: string) => void;
-  onSelect: (p: ProgrammeBatch) => void; onCreate: () => void;
+  onSelect: (p: ProgrammeBatch) => void; onCreate: () => void; onEdit: (p: ProgrammeBatch) => void; onDelete: (id: string) => void;
 }) {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -476,7 +596,7 @@ function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCr
       <div style={{ background: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
         {/* Header */}
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 24px',
+          display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 32px',
           alignItems: 'center', gap: 0, padding: '9px 20px',
           borderBottom: '1px solid var(--border-subtle)',
         }}>
@@ -496,7 +616,7 @@ function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCr
               key={prog.id}
               onClick={() => onSelect(prog)}
               style={{
-                display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 24px',
+                display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 32px',
                 alignItems: 'center', gap: 0, padding: '14px 20px',
                 borderBottom: i < filtered.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
                 cursor: 'pointer', transition: 'background 0.1s',
@@ -543,8 +663,8 @@ function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCr
               {/* Semesters */}
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{prog.totalSemesters}</span>
 
-              {/* Arrow */}
-              <ChevronRight size={14} strokeWidth={1.8} style={{ color: 'var(--text-tertiary)', opacity: 0.3 }} />
+              {/* Actions */}
+              <ProgActionsMenu onEdit={() => onEdit(prog)} onDelete={() => onDelete(prog.id)} />
             </div>
           );
         })}
@@ -1645,6 +1765,7 @@ export default function CoursesView() {
   const [programmes, setProgrammes] = useState(PROGRAMME_BATCHES);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingProgramme, setEditingProgramme] = useState<ProgrammeBatch | null>(null);
   const [selectedProgramme, setSelectedProgramme] = useState<ProgrammeBatch | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<CoordinatorCourse | null>(null);
   const [deepLinkedActivity, setDeepLinkedActivity] = useState<string | null>(null);
@@ -1713,11 +1834,17 @@ export default function CoursesView() {
         <ProgrammeDetail programme={selectedProgramme} searchQuery={searchQuery} onSelectCourse={setSelectedCourse} />
       ) : (
         <ProgrammeList programmes={programmes} searchQuery={searchQuery} onSearchChange={setSearchQuery}
-          onSelect={p => { setSelectedProgramme(p); setSearchQuery(''); }} onCreate={() => setShowCreateModal(true)} />
+          onSelect={p => { setSelectedProgramme(p); setSearchQuery(''); }} onCreate={() => setShowCreateModal(true)}
+          onEdit={p => setEditingProgramme(p)}
+          onDelete={id => setProgrammes(prev => prev.filter(p => p.id !== id))} />
       )}
 
       {showCreateModal && (
         <CreateProgrammeModal onClose={() => setShowCreateModal(false)} onCreate={p => setProgrammes(prev => [...prev, p])} />
+      )}
+      {editingProgramme && (
+        <EditProgrammeModal programme={editingProgramme} onClose={() => setEditingProgramme(null)}
+          onSave={updated => { setProgrammes(prev => prev.map(p => p.id === updated.id ? updated : p)); setEditingProgramme(null); }} />
       )}
     </div>
   );
