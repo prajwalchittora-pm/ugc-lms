@@ -1,6 +1,6 @@
 # UGC LMS — Developer Handoff Document
 
-> **Last updated:** 8 June 2026
+> **Last updated:** 13 June 2026
 > **Status:** Production frontend prototype — all UI complete, mock data throughout
 > **Your job:** Replace mock data with API calls. The UI is final.
 
@@ -25,7 +25,7 @@ npm run build      # 36 static routes, zero errors
 | Role | Base Route | Sidenav | Tabs |
 |------|-----------|---------|------|
 | **Learner** | `/` | `SideNav.tsx` | Dashboard, Learn, Calendar, E-Library, Exam, Forum, Grades, Announcements, Tickets |
-| **Coordinator** | `/coordinator` | `CoordinatorSideNav.tsx` | Home, Programmes, Students, Grading, Gradebook, Attendance, Exams, Schedule, Reports, Announcements, Forums |
+| **Coordinator** | `/coordinator` | `CoordinatorSideNav.tsx` | Home, Programmes, Students, **Faculty**, Grading, Gradebook, Attendance, Exams, Schedule, Reports, Announcements, Forums |
 | **Faculty** | `/faculty` | `FacultySideNav.tsx` | Home, My Programmes, Students, Grading, Gradebook, Attendance, Exams, Schedule, Reports, Announcements, Forums |
 | **Mentor** | `/mentor` | `MentorSideNav.tsx` | Home, My Mentees, Counselling, Escalations, Announcements, Forums |
 

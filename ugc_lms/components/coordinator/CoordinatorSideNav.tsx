@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Home, GraduationCap, Users, UserCheck, BookOpen, ClipboardCheck, FileCheck, CalendarDays, BarChart3, Megaphone, MessageSquare, LogOut, HelpCircle, Check, PanelLeftClose } from 'lucide-react';
+import { Home, GraduationCap, Users, UserCheck, BookOpen, ClipboardCheck, FileCheck, CalendarDays, BarChart3, Megaphone, MessageSquare, LogOut, HelpCircle, Check, PanelLeftClose, UserCog } from 'lucide-react';
 import { COORDINATOR } from '@/lib/coordinatorData';
 
 const BG = '#0D0A3D';
@@ -19,6 +19,7 @@ const TABS = [
   { key: 'home', label: 'Home', icon: Home, href: '/coordinator' },
   { key: 'courses', label: 'Programmes', icon: GraduationCap, href: '/coordinator/courses' },
   { key: 'students', label: 'Students', icon: UserCheck, href: '/coordinator/students' },
+  { key: 'faculty', label: 'Faculty', icon: UserCog, href: '/coordinator/faculty' },
   { key: 'grading', label: 'Grading', icon: ClipboardCheck, href: '/coordinator/grading' },
   { key: 'gradebook', label: 'Gradebook', icon: BookOpen, href: '/coordinator/gradebook' },
   { key: 'attendance', label: 'Attendance', icon: Users, href: '/coordinator/attendance' },

@@ -13,7 +13,7 @@ interface CourseGrade {
 }
 
 interface Course {
-  code: string; name: string; credits: number;
+  code: string; name: string; credits: number; semester: number;
 }
 
 interface StudentRow {
@@ -41,12 +41,98 @@ const PROGRAMMES = [
 
 const COURSES: Record<string, Course[]> = {
   'mba-26': [
-    { code: 'MBA-101', name: 'Managerial Economics', credits: 4 },
-    { code: 'MBA-102', name: 'Managerial Communication', credits: 3 },
-    { code: 'MBA-103', name: 'Financial Accounting', credits: 4 },
-    { code: 'MBA-104', name: 'Organizational Behaviour', credits: 3 },
-    { code: 'MBA-105', name: 'Business Statistics', credits: 4 },
-    { code: 'MBA-106', name: 'Business Law & Ethics', credits: 2 },
+    // Semester 1
+    { code: 'MBA-101', name: 'Managerial Economics', credits: 4, semester: 1 },
+    { code: 'MBA-102', name: 'Managerial Communication', credits: 3, semester: 1 },
+    { code: 'MBA-103', name: 'Financial Accounting', credits: 4, semester: 1 },
+    { code: 'MBA-104', name: 'Organizational Behaviour', credits: 3, semester: 1 },
+    { code: 'MBA-105', name: 'Business Statistics', credits: 4, semester: 1 },
+    { code: 'MBA-106', name: 'Business Law & Ethics', credits: 2, semester: 1 },
+    // Semester 2
+    { code: 'MBA-201', name: 'Marketing Management', credits: 4, semester: 2 },
+    { code: 'MBA-202', name: 'Financial Management', credits: 4, semester: 2 },
+    { code: 'MBA-203', name: 'Operations Management', credits: 4, semester: 2 },
+    { code: 'MBA-204', name: 'Human Resource Management', credits: 3, semester: 2 },
+    { code: 'MBA-205', name: 'Business Research Methods', credits: 3, semester: 2 },
+    { code: 'MBA-206', name: 'Management Information Systems', credits: 2, semester: 2 },
+    // Semester 3
+    { code: 'MBA-301', name: 'Strategic Management', credits: 4, semester: 3 },
+    { code: 'MBA-302', name: 'Entrepreneurship & Innovation', credits: 3, semester: 3 },
+    { code: 'MBA-303', name: 'Corporate Governance & Ethics', credits: 3, semester: 3 },
+    { code: 'MBA-304', name: 'Elective I — Finance / Marketing', credits: 4, semester: 3 },
+    { code: 'MBA-305', name: 'Elective II — HR / Operations', credits: 4, semester: 3 },
+    { code: 'MBA-306', name: 'Industry Seminar & Live Projects', credits: 2, semester: 3 },
+    // Semester 4
+    { code: 'MBA-401', name: 'Business Policy & Grand Strategy', credits: 4, semester: 4 },
+    { code: 'MBA-402', name: 'Project & Change Management', credits: 3, semester: 4 },
+    { code: 'MBA-403', name: 'Elective III — Specialisation', credits: 4, semester: 4 },
+    { code: 'MBA-404', name: 'Summer Internship Report', credits: 6, semester: 4 },
+    { code: 'MBA-405', name: 'Dissertation & Viva Voce', credits: 8, semester: 4 },
+  ],
+  'bca-26': [
+    { code: 'BCA-101', name: 'Introduction to Computers', credits: 4, semester: 1 },
+    { code: 'BCA-102', name: 'Programming Fundamentals (C)', credits: 4, semester: 1 },
+    { code: 'BCA-103', name: 'Mathematics I', credits: 4, semester: 1 },
+    { code: 'BCA-104', name: 'Digital Electronics', credits: 3, semester: 1 },
+    { code: 'BCA-105', name: 'English Communication', credits: 2, semester: 1 },
+    { code: 'BCA-201', name: 'Data Structures', credits: 4, semester: 2 },
+    { code: 'BCA-202', name: 'Object-Oriented Programming (Java)', credits: 4, semester: 2 },
+    { code: 'BCA-203', name: 'Mathematics II — Discrete Maths', credits: 4, semester: 2 },
+    { code: 'BCA-204', name: 'Database Management Systems', credits: 4, semester: 2 },
+    { code: 'BCA-205', name: 'Web Technologies — HTML/CSS/JS', credits: 3, semester: 2 },
+    { code: 'BCA-301', name: 'Computer Networks', credits: 4, semester: 3 },
+    { code: 'BCA-302', name: 'Operating Systems', credits: 4, semester: 3 },
+    { code: 'BCA-303', name: 'Software Engineering', credits: 3, semester: 3 },
+    { code: 'BCA-304', name: 'Advanced Java & Frameworks', credits: 4, semester: 3 },
+    { code: 'BCA-305', name: 'Linux & Shell Scripting', credits: 2, semester: 3 },
+    { code: 'BCA-401', name: 'Algorithms & Complexity', credits: 4, semester: 4 },
+    { code: 'BCA-402', name: 'Mobile Application Development', credits: 4, semester: 4 },
+    { code: 'BCA-403', name: 'Cloud Computing Fundamentals', credits: 3, semester: 4 },
+    { code: 'BCA-404', name: 'Cybersecurity Essentials', credits: 3, semester: 4 },
+    { code: 'BCA-501', name: 'Artificial Intelligence', credits: 4, semester: 5 },
+    { code: 'BCA-502', name: 'Machine Learning Fundamentals', credits: 4, semester: 5 },
+    { code: 'BCA-503', name: 'Full Stack Web Development', credits: 4, semester: 5 },
+    { code: 'BCA-504', name: 'Elective I', credits: 3, semester: 5 },
+    { code: 'BCA-601', name: 'Project Work — Phase I', credits: 6, semester: 6 },
+    { code: 'BCA-602', name: 'Project Work — Phase II & Viva', credits: 8, semester: 6 },
+    { code: 'BCA-603', name: 'Seminar & Technical Presentation', credits: 2, semester: 6 },
+  ],
+  'cse-26': [
+    { code: 'CSE-101', name: 'Engineering Mathematics I', credits: 4, semester: 1 },
+    { code: 'CSE-102', name: 'Programming in C', credits: 4, semester: 1 },
+    { code: 'CSE-103', name: 'Digital Logic Design', credits: 3, semester: 1 },
+    { code: 'CSE-104', name: 'Engineering Physics', credits: 3, semester: 1 },
+    { code: 'CSE-105', name: 'Communication Skills', credits: 2, semester: 1 },
+    { code: 'CSE-201', name: 'Data Structures & Algorithms', credits: 4, semester: 2 },
+    { code: 'CSE-202', name: 'Engineering Mathematics II', credits: 4, semester: 2 },
+    { code: 'CSE-203', name: 'Computer Organization & Architecture', credits: 4, semester: 2 },
+    { code: 'CSE-204', name: 'Discrete Mathematics', credits: 3, semester: 2 },
+    { code: 'CSE-205', name: 'Object-Oriented Programming (C++)', credits: 4, semester: 2 },
+    { code: 'CSE-301', name: 'Operating Systems', credits: 4, semester: 3 },
+    { code: 'CSE-302', name: 'Database Management Systems', credits: 4, semester: 3 },
+    { code: 'CSE-303', name: 'Computer Networks', credits: 4, semester: 3 },
+    { code: 'CSE-304', name: 'Theory of Computation', credits: 3, semester: 3 },
+    { code: 'CSE-305', name: 'Software Engineering', credits: 3, semester: 3 },
+    { code: 'CSE-401', name: 'Compiler Design', credits: 4, semester: 4 },
+    { code: 'CSE-402', name: 'Artificial Intelligence', credits: 4, semester: 4 },
+    { code: 'CSE-403', name: 'Web Technologies & Frameworks', credits: 4, semester: 4 },
+    { code: 'CSE-404', name: 'Microprocessors & Embedded Systems', credits: 3, semester: 4 },
+    { code: 'CSE-405', name: 'Elective I', credits: 3, semester: 4 },
+    { code: 'CSE-501', name: 'Machine Learning', credits: 4, semester: 5 },
+    { code: 'CSE-502', name: 'Cloud Computing & DevOps', credits: 4, semester: 5 },
+    { code: 'CSE-503', name: 'Cybersecurity & Cryptography', credits: 4, semester: 5 },
+    { code: 'CSE-504', name: 'Elective II', credits: 3, semester: 5 },
+    { code: 'CSE-505', name: 'Mini Project', credits: 2, semester: 5 },
+    { code: 'CSE-601', name: 'Deep Learning & Neural Networks', credits: 4, semester: 6 },
+    { code: 'CSE-602', name: 'Distributed Systems', credits: 4, semester: 6 },
+    { code: 'CSE-603', name: 'Elective III', credits: 3, semester: 6 },
+    { code: 'CSE-604', name: 'Elective IV', credits: 3, semester: 6 },
+    { code: 'CSE-701', name: 'Major Project — Phase I', credits: 6, semester: 7 },
+    { code: 'CSE-702', name: 'Elective V — Advanced Topics', credits: 4, semester: 7 },
+    { code: 'CSE-703', name: 'Industry Internship', credits: 4, semester: 7 },
+    { code: 'CSE-801', name: 'Major Project — Phase II & Defence', credits: 10, semester: 8 },
+    { code: 'CSE-802', name: 'Seminar & Research Paper', credits: 3, semester: 8 },
+    { code: 'CSE-803', name: 'Comprehensive Viva Voce', credits: 2, semester: 8 },
   ],
 };
 
@@ -171,6 +257,7 @@ export default function GradebookView() {
   const [search, setSearch] = useState('');
   const [showProgrammeDD, setShowProgrammeDD] = useState(false);
   const [hoveredGrade, setHoveredGrade] = useState<{ studentId: string; courseCode: string } | null>(null);
+  const [expandedSemesters, setExpandedSemesters] = useState<Set<number>>(new Set([1]));
   const programmeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -180,6 +267,11 @@ export default function GradebookView() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  useEffect(() => {
+    const p = PROGRAMMES.find(prog => prog.id === selectedProgramme) || PROGRAMMES[0];
+    setExpandedSemesters(new Set([p.currentSem]));
+  }, [selectedProgramme]);
 
   const programme = PROGRAMMES.find(p => p.id === selectedProgramme) || PROGRAMMES[0];
   const courses = COURSES[selectedProgramme] || [];
@@ -431,6 +523,8 @@ export default function GradebookView() {
       {/* ═══ CONFIGURATION TAB ═══ */}
       {tab === 'config' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
           {/* Grade Scale */}
           <div style={{ background: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -505,6 +599,85 @@ export default function GradebookView() {
             </table>
           </div>
 
+          {/* Credit Structure — fills empty space below Grade Scale */}
+          <div style={{ background: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Credit Structure</div>
+              <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 500, marginTop: 2 }}>{programme.name} &middot; {programme.semesters} semesters</div>
+            </div>
+
+            {/* Semester accordion list */}
+            <div style={{ maxHeight: 440, overflowY: 'auto' }}>
+              {Array.from({ length: programme.semesters }, (_, i) => i + 1).map(semNum => {
+                const semCourses = courses.filter(c => c.semester === semNum);
+                const semCredits = semCourses.reduce((s, c) => s + c.credits, 0);
+                const isExpanded = expandedSemesters.has(semNum);
+                const isActive = semNum === programme.currentSem;
+                return (
+                  <div key={semNum} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                    <button
+                      onClick={() => {
+                        const next = new Set(expandedSemesters);
+                        if (next.has(semNum)) next.delete(semNum); else next.add(semNum);
+                        setExpandedSemesters(next);
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', width: '100%',
+                        padding: '9px 14px', gap: 7,
+                        background: isExpanded ? 'rgba(7,47,181,0.02)' : 'transparent',
+                        border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                      }}
+                      onMouseEnter={e => { if (!isExpanded) e.currentTarget.style.background = 'var(--bg-section)'; }}
+                      onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <ChevronDown size={11} style={{ color: 'var(--text-tertiary)', transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.15s ease', flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', flex: 1, textAlign: 'left' }}>Semester {semNum}</span>
+                      {isActive && (
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#059669', background: 'rgba(5,150,105,0.08)', padding: '2px 6px', borderRadius: 'var(--radius-xs)', letterSpacing: '0.04em', textTransform: 'uppercase', flexShrink: 0 }}>Active</span>
+                      )}
+                      <span style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', fontWeight: 500, flexShrink: 0, marginLeft: 4 }}>
+                        {semCourses.length} courses &middot; {semCredits} cr
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div style={{ background: 'rgba(0,0,0,0.01)' }}>
+                        {semCourses.length === 0 ? (
+                          <div style={{ padding: '8px 14px 8px 34px', fontSize: 11, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No courses configured</div>
+                        ) : (
+                          <>
+                            {semCourses.map(c => (
+                              <div key={c.code} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px 6px 34px', borderTop: '1px solid rgba(0,0,0,0.03)' }}>
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{c.name}</div>
+                                  <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', marginTop: 1 }}>{c.code}</div>
+                                </div>
+                                <span style={{ fontSize: 11.5, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexShrink: 0, marginLeft: 10 }}>
+                                  {c.credits}<span style={{ fontWeight: 400, color: 'var(--text-tertiary)' }}> cr</span>
+                                </span>
+                              </div>
+                            ))}
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '5px 14px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--blue-700)', fontFamily: 'var(--font-mono)' }}>Subtotal: {semCredits} cr</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Grand total */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 14px', borderTop: '1.5px solid var(--border-subtle)', background: 'rgba(0,0,0,0.01)' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>Total Credits</span>
+              <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--blue-700)' }}>{totalCredits}</span>
+            </div>
+          </div>
+
+          </div>{/* end left column */}
+
           {/* Right column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Assessment Weightage */}
@@ -532,29 +705,6 @@ export default function GradebookView() {
               <div style={{ display: 'flex', marginTop: 12, borderRadius: 'var(--radius-xs)', overflow: 'hidden', height: 8 }}>
                 <div style={{ width: `${internalWeight}%`, background: 'var(--blue-700)', transition: 'width 0.2s' }} />
                 <div style={{ flex: 1, background: 'rgba(7,47,181,0.15)' }} />
-              </div>
-            </div>
-
-            {/* Credit Structure */}
-            <div style={{ background: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', padding: '20px' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginBottom: 4 }}>Credit Structure</div>
-              <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 500, marginBottom: 14 }}>Semester {selectedSemester} &middot; {programme.name}</div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {courses.map(c => (
-                  <div key={c.code} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', marginTop: 1 }}>{c.code}</div>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{c.credits}<span style={{ fontWeight: 400, color: 'var(--text-tertiary)' }}> cr</span></span>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>Total Credits</span>
-                <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--blue-700)' }}>{totalCredits}</span>
               </div>
             </div>
 

@@ -11,13 +11,14 @@
    - 2.1 [Home Dashboard](#21-home-dashboard)
    - 2.2 [Programmes](#22-programmes)
    - 2.3 [Students](#23-students)
-   - 2.4 [Grading](#24-grading)
-   - 2.5 [Gradebook](#25-gradebook)
-   - 2.6 [Attendance](#26-attendance)
-   - 2.7 [Exams](#27-exams)
-   - 2.8 [Schedule](#28-schedule)
-   - 2.9 [Reports](#29-reports)
-   - 2.10 [Announcements](#210-announcements)
+   - 2.4 [Faculty](#24-faculty)
+   - 2.5 [Grading](#25-grading)
+   - 2.6 [Gradebook](#26-gradebook)
+   - 2.7 [Attendance](#27-attendance)
+   - 2.8 [Exams](#28-exams)
+   - 2.9 [Schedule](#29-schedule)
+   - 2.10 [Reports](#210-reports)
+   - 2.11 [Announcements](#211-announcements)
    - 2.11 [Forums](#211-forums)
 3. [Mentor Role](#3-mentor-role)
    - 3.1 [Home Dashboard](#31-home-dashboard)
@@ -51,7 +52,7 @@ When connecting APIs, add a `role` prop to shared components to:
 
 ## 2. Coordinator / Faculty Role
 
-**Sidenav tabs (11):** Home, Programmes, Students, Grading, Gradebook, Attendance, Exams, Schedule, Reports, Announcements, Forums
+**Sidenav tabs (12):** Home, Programmes, Students, **Faculty**, Grading, Gradebook, Attendance, Exams, Schedule, Reports, Announcements, Forums
 
 ---
 
@@ -125,6 +126,8 @@ Shows the **next 5 chronological events** as a horizontal row of cards.
 | Assignment | Submission progress | "4/20 submitted" | Due date has passed and grade-by date is approaching — coordinator needs to check submissions and grade or delegate to faculty | Grade submissions, remind faculty to grade, extend deadline if needed |
 | Quiz | Publication status | "Published" or "Draft" | A draft quiz approaching its open date needs to be published or students can't take it | Review and publish the quiz |
 | Exam | Eligibility count | "106/124 eligible" | Per UGC regulations, students below 75% engagement are ineligible. Coordinator needs to know how many can sit for the exam | Review at-risk students, process exemption requests |
+
+Each card also shows a **programme + course breadcrumb** (e.g. `MBA - Batch 2026 · MBA-105 Business Statistics`) between the title and context line, giving immediate programme and course context without opening the event.
 | Live Session | Assigned faculty | "Dr. Anita Desai" | Confirms the session has a faculty member assigned and is ready to proceed | Verify setup, join session |
 
 **Click behavior — deep-link navigation per event type:**
@@ -681,21 +684,19 @@ When a quiz activity is selected in the course editor with **edit mode on**, the
 **Table columns:**
 - Checkbox (for multi-select)
 - Name + avatar
-- Roll Number
-- Programme
-- Status (Active/Suspended/Inactive)
+- Roll Number — shows amber "Not Enrolled" badge when `rollNo` is null (roll numbers are only assigned upon programme enrollment)
+- Email
+- Programme code
+- Status (Active/Suspended/New)
 - Last Active (relative time)
-- Avg Grade
-- Engagement Score
 
 **Filters:**
 - Search (name, email, roll number)
-- Programme dropdown
-- Status dropdown
+- Status dropdown (All / Active / Suspended / New)
 
 **Actions:**
 - "Create Student" button → modal
-- "Bulk Upload" button → CSV modal
+- "Bulk Upload" button → CSV modal with file-select → processing → results flow
 - Delete selected (with confirmation dialog)
 
 **Create Student Modal — UGC-required fields:**
@@ -754,7 +755,45 @@ Accessed by clicking a student row. Two-panel layout:
 
 ---
 
-### 2.4 Grading
+### 2.4 Faculty
+
+**File:** `components/coordinator/FacultyView.tsx`
+**Route:** `/coordinator/faculty`
+
+Two tabs: **Faculty** and **Mentor**.
+
+#### Faculty Tab
+
+**Table columns:** Name (avatar + name), Email, Phone, Last Active, Status (Active / Inactive / Pending / New), Actions (⋯ menu)
+
+**Filters:** Search, Status dropdown (All / Active / Inactive / Pending / New)
+
+**Create Faculty Account modal** (blue gradient header):
+- Username (hero field, monospace)
+- First Name, Last Name (2-col)
+- Email, Password, Phone
+
+**Three-dot actions per row:**
+- **Edit** → pre-filled modal (same fields, blue gradient)
+- **Suspend** → sets status to Inactive
+- **Delete** → removes row
+
+#### Mentor Tab
+
+**Table columns:** Name, Email, Phone, Students (count only), Last Active, Status, Actions
+
+**UGC compliance banner:** "UGC Regulations (2020) mandate a maximum 1:250 mentor-to-student ratio. Each mentor listed here is automatically checked for allocation compliance."
+
+**Create Mentor Account modal** (green gradient header):
+- Username (hero field), First Name, Last Name, Email, Password, Phone
+- Assigned Programme (dropdown)
+- Student Allocation (max 250, UGC note)
+
+**Status values for both tabs:** Active (green), Inactive (grey), Pending (amber), New (blue)
+
+---
+
+### 2.5 Grading
 
 **File:** `components/coordinator/GradingView.tsx`
 **Route:** `/coordinator/grading` or `/faculty/grading`
@@ -908,9 +947,14 @@ Two-column layout: grade scale (left, wider) + settings (right)
 - Range: 10-50% internal
 - Visual progress bar showing the split
 
-**Credit Structure:**
-- Per-course credit listing for the selected semester
-- Total credits at bottom
+**Credit Structure** (moved to left column below Grade Scale):
+- Semester accordion — each semester row shows course count + credits, collapses/expands on click
+- Active semester marked with green "Active" badge
+- Expanded view: course name, course code, credits per course; subtotal at bottom of each semester
+- Scrollable list (max-height 440px) — handles up to 20+ courses per semester without layout overflow
+- Grand total credits pinned to card footer
+- Switching programme resets expanded state to that programme's active semester
+- Data covers all 3 programmes: MBA (4 sems), BCA (6 sems), B.Tech CSE (8 sems)
 
 **SGPA Formula Card:**
 - Mathematical notation: SGPA = Σ(Ci × GPi) / ΣCi

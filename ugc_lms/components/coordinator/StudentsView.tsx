@@ -1,14 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight, Plus, Upload, X, Check, Users, Mail, Phone, Calendar, Clock, LogIn, ShieldCheck, AlertTriangle, CheckCircle2, XCircle, Video, ClipboardCheck, MessageSquare, BookOpenText, MonitorPlay, Ticket, UserPlus, Trash2, Ban, MoreHorizontal, FileCheck, ExternalLink, ChevronDown, Filter, LayoutGrid, Copy, GraduationCap, User } from 'lucide-react';
 import DateRangePicker from './DateRangePicker';
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 
 interface Student {
-  id: string; name: string; initials: string; rollNo: string; email: string; phone: string;
+  id: string; name: string; initials: string; rollNo: string | null; email: string; phone: string;
   programme: string; programmeCode: string; semester: number;
-  status: 'active' | 'suspended' | 'inactive'; lastActive: string; lastLogin: string;
+  status: 'active' | 'suspended' | 'new'; lastActive: string; lastLogin: string;
   avgGrade: number; avgAttendance: number; engagementScore: number;
   assignmentsSubmitted: number; assignmentsTotal: number;
   quizzesAttempted: number; quizzesTotal: number;
@@ -20,13 +20,15 @@ const STUDENTS: Student[] = [
   { id: 's3', name: 'Rahul Verma', initials: 'RV', rollNo: 'MBA-2026-003', email: 'rahul.verma@university.edu', phone: '9876543212', programme: 'MBA - Batch 2026', programmeCode: 'MBA-26', semester: 1, status: 'suspended', lastActive: '5 days ago', lastLogin: '2 Jun 2026, 9:00 AM', avgGrade: 45, avgAttendance: 52, engagementScore: 38, assignmentsSubmitted: 1, assignmentsTotal: 4, quizzesAttempted: 1, quizzesTotal: 3 },
   { id: 's4', name: 'Ananya Iyer', initials: 'AI', rollNo: 'BCA-2026-001', email: 'ananya.iyer@university.edu', phone: '9876543213', programme: 'BCA - Batch 2026', programmeCode: 'BCA-26', semester: 2, status: 'active', lastActive: '1 hour ago', lastLogin: '7 Jun 2026, 1:00 PM', avgGrade: 85, avgAttendance: 90, engagementScore: 78, assignmentsSubmitted: 3, assignmentsTotal: 3, quizzesAttempted: 2, quizzesTotal: 2 },
   { id: 's5', name: 'Karthik Nair', initials: 'KN', rollNo: 'BCA-2026-002', email: 'karthik.nair@university.edu', phone: '9876543214', programme: 'BCA - Batch 2026', programmeCode: 'BCA-26', semester: 2, status: 'active', lastActive: '3 hours ago', lastLogin: '7 Jun 2026, 11:45 AM', avgGrade: 81, avgAttendance: 92, engagementScore: 82, assignmentsSubmitted: 3, assignmentsTotal: 3, quizzesAttempted: 2, quizzesTotal: 2 },
-  { id: 's6', name: 'Neha Patel', initials: 'NP', rollNo: 'MBA-2026-006', email: 'neha.patel@university.edu', phone: '9876543215', programme: 'MBA - Batch 2026', programmeCode: 'MBA-26', semester: 1, status: 'inactive', lastActive: '12 days ago', lastLogin: '26 May 2026, 4:20 PM', avgGrade: 32, avgAttendance: 40, engagementScore: 28, assignmentsSubmitted: 0, assignmentsTotal: 4, quizzesAttempted: 0, quizzesTotal: 3 },
+  { id: 's6', name: 'Neha Patel', initials: 'NP', rollNo: 'MBA-2026-006', email: 'neha.patel@university.edu', phone: '9876543215', programme: 'MBA - Batch 2026', programmeCode: 'MBA-26', semester: 1, status: 'new', lastActive: '12 days ago', lastLogin: '26 May 2026, 4:20 PM', avgGrade: 32, avgAttendance: 40, engagementScore: 28, assignmentsSubmitted: 0, assignmentsTotal: 4, quizzesAttempted: 0, quizzesTotal: 3 },
   { id: 's7', name: 'Vikash Kumar', initials: 'VK', rollNo: 'CSE-2026-001', email: 'vikash.kumar@university.edu', phone: '9876543216', programme: 'B.Tech CSE - Batch 2026', programmeCode: 'B.Tech CSE-26', semester: 2, status: 'active', lastActive: '6 hours ago', lastLogin: '7 Jun 2026, 8:30 AM', avgGrade: 74, avgAttendance: 80, engagementScore: 65, assignmentsSubmitted: 2, assignmentsTotal: 3, quizzesAttempted: 2, quizzesTotal: 3 },
   { id: 's8', name: 'Sneha Reddy', initials: 'SR', rollNo: 'MBA-2026-008', email: 'sneha.reddy@university.edu', phone: '9876543217', programme: 'MBA - Batch 2026', programmeCode: 'MBA-26', semester: 1, status: 'active', lastActive: '15 min ago', lastLogin: '7 Jun 2026, 2:45 PM', avgGrade: 95, avgAttendance: 98, engagementScore: 95, assignmentsSubmitted: 4, assignmentsTotal: 4, quizzesAttempted: 3, quizzesTotal: 3 },
   { id: 's9', name: 'Amit Singh', initials: 'AS', rollNo: 'CSE-2026-002', email: 'amit.singh@university.edu', phone: '9876543218', programme: 'B.Tech CSE - Batch 2026', programmeCode: 'B.Tech CSE-26', semester: 2, status: 'active', lastActive: '2 days ago', lastLogin: '5 Jun 2026, 7:00 PM', avgGrade: 68, avgAttendance: 76, engagementScore: 51, assignmentsSubmitted: 2, assignmentsTotal: 3, quizzesAttempted: 1, quizzesTotal: 3 },
   { id: 's10', name: 'Divya Joshi', initials: 'DJ', rollNo: 'BCA-2026-003', email: 'divya.joshi@university.edu', phone: '9876543219', programme: 'BCA - Batch 2026', programmeCode: 'BCA-26', semester: 2, status: 'active', lastActive: '4 hours ago', lastLogin: '7 Jun 2026, 10:00 AM', avgGrade: 77, avgAttendance: 86, engagementScore: 74, assignmentsSubmitted: 2, assignmentsTotal: 3, quizzesAttempted: 2, quizzesTotal: 2 },
   { id: 's11', name: 'Rohan Gupta', initials: 'RG', rollNo: 'MBA-2026-011', email: 'rohan.gupta@university.edu', phone: '9876543220', programme: 'MBA - Batch 2026', programmeCode: 'MBA-26', semester: 1, status: 'active', lastActive: '1 day ago', lastLogin: '6 Jun 2026, 3:30 PM', avgGrade: 71, avgAttendance: 82, engagementScore: 67, assignmentsSubmitted: 3, assignmentsTotal: 4, quizzesAttempted: 2, quizzesTotal: 3 },
   { id: 's12', name: 'Meera Krishnan', initials: 'MK', rollNo: 'CSE-2026-003', email: 'meera.k@university.edu', phone: '9876543221', programme: 'B.Tech CSE - Batch 2026', programmeCode: 'B.Tech CSE-26', semester: 2, status: 'active', lastActive: '8 hours ago', lastLogin: '7 Jun 2026, 6:15 AM', avgGrade: 88, avgAttendance: 94, engagementScore: 85, assignmentsSubmitted: 3, assignmentsTotal: 3, quizzesAttempted: 3, quizzesTotal: 3 },
+  { id: 's13', name: 'Tanvi Desai', initials: 'TD', rollNo: null, email: 'tanvi.desai@university.edu', phone: '9876543222', programme: 'MBA - Batch 2026', programmeCode: 'MBA-26', semester: 1, status: 'new', lastActive: 'Never', lastLogin: 'Never', avgGrade: 0, avgAttendance: 0, engagementScore: 0, assignmentsSubmitted: 0, assignmentsTotal: 0, quizzesAttempted: 0, quizzesTotal: 0 },
+  { id: 's14', name: 'Harish Pillai', initials: 'HP', rollNo: null, email: 'harish.pillai@university.edu', phone: '9876543223', programme: 'BCA - Batch 2026', programmeCode: 'BCA-26', semester: 1, status: 'new', lastActive: 'Never', lastLogin: 'Never', avgGrade: 0, avgAttendance: 0, engagementScore: 0, assignmentsSubmitted: 0, assignmentsTotal: 0, quizzesAttempted: 0, quizzesTotal: 0 },
 ];
 
 const STUDENT_PROFILE_EXTRAS: Record<string, { gender: string; lastLoginAgo: string; lastActiveDate: string }> = {
@@ -105,8 +107,8 @@ const MOCK_TICKETS = [
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function StatusDot({ status }: { status: string }) {
-  const colors: Record<string, string> = { active: '#059669', suspended: '#D97706', inactive: '#747474', present: '#059669', absent: '#DC2626', open: '#D97706', resolved: '#059669', graded: '#059669', pending: '#D97706', submitted: '#059669', not_attempted: '#747474' };
-  const labels: Record<string, string> = { active: 'Active', suspended: 'Suspended', inactive: 'Inactive', present: 'Present', absent: 'Absent', open: 'Open', resolved: 'Resolved', graded: 'Submitted & Graded', pending: 'Not Submitted', submitted: 'Submitted', not_attempted: 'Not Attempted' };
+  const colors: Record<string, string> = { active: '#059669', suspended: '#D97706', new: '#072FB5', present: '#059669', absent: '#DC2626', open: '#D97706', resolved: '#059669', graded: '#059669', pending: '#D97706', submitted: '#059669', not_attempted: '#747474' };
+  const labels: Record<string, string> = { active: 'Active', suspended: 'Suspended', new: 'New', present: 'Present', absent: 'Absent', open: 'Open', resolved: 'Resolved', graded: 'Submitted & Graded', pending: 'Not Submitted', submitted: 'Submitted', not_attempted: 'Not Attempted' };
   const c = colors[status] || '#747474';
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: c }}>
@@ -862,7 +864,7 @@ function CreateStudentModal({ onClose, onCreate }: { onClose: () => void; onCrea
 
         <div style={{ padding: '14px 24px', background: '#FAFAFA', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
           <button onClick={onClose} style={{ padding: '8px 18px', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
-          <button onClick={() => { if (!canCreate) return; onCreate({ id: 'new-' + Date.now(), name: fullName, initials: `${firstName[0]}${lastName[0]}`.toUpperCase(), rollNo, email, phone, programme: programmes.find(p => p.code === programme)?.name || '', programmeCode: programme, semester: parseInt(semester), status: 'active', lastActive: 'Just now', lastLogin: 'Just now', avgGrade: 0, avgAttendance: 0, engagementScore: 0, assignmentsSubmitted: 0, assignmentsTotal: 0, quizzesAttempted: 0, quizzesTotal: 0 }); onClose(); }} disabled={!canCreate} style={{
+          <button onClick={() => { if (!canCreate) return; onCreate({ id: 'new-' + Date.now(), name: fullName, initials: `${firstName[0]}${lastName[0]}`.toUpperCase(), rollNo, email, phone, programme: programmes.find(p => p.code === programme)?.name || '', programmeCode: programme, semester: parseInt(semester), status: 'new', lastActive: 'Just now', lastLogin: 'Just now', avgGrade: 0, avgAttendance: 0, engagementScore: 0, assignmentsSubmitted: 0, assignmentsTotal: 0, quizzesAttempted: 0, quizzesTotal: 0 }); onClose(); }} disabled={!canCreate} style={{
             padding: '8px 22px', fontSize: 13, fontWeight: 700, color: '#fff',
             background: canCreate ? 'var(--blue-700)' : 'var(--border-subtle)',
             border: 'none', borderRadius: 8, cursor: canCreate ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-sans)',
@@ -876,73 +878,233 @@ function CreateStudentModal({ onClose, onCreate }: { onClose: () => void; onCrea
 
 // ─── Bulk Upload Modal ──────────────────────────────────────────────────────
 
+type UploadStage = 'idle' | 'file_selected' | 'processing' | 'results';
+
+interface UploadResultRow {
+  row: number; name: string; email: string;
+  status: 'success' | 'error'; reason?: string;
+}
+
+const MOCK_UPLOAD_RESULTS: UploadResultRow[] = [
+  { row: 2, name: 'Riya Verma', email: 'riya.v@university.edu', status: 'success' },
+  { row: 3, name: 'Saurabh Patil', email: 'saurabh.p@university.edu', status: 'success' },
+  { row: 4, name: 'Ayesha Ansari', email: 'ayesha.a@university.edu', status: 'success' },
+  { row: 5, name: 'Deepak Rao', email: 'deepak.rao@university.edu', status: 'error', reason: 'Duplicate email — already exists' },
+  { row: 6, name: 'Nisha Iyer', email: 'nisha.iyer@university.edu', status: 'success' },
+  { row: 7, name: 'Tushar Mehta', email: 'tushar.m@university.edu', status: 'error', reason: 'Invalid programme code: MBA-27' },
+  { row: 8, name: 'Pooja Nambiar', email: 'pooja.n@university.edu', status: 'success' },
+  { row: 9, name: 'Kabir Sen', email: 'kabir.s@university.edu', status: 'error', reason: 'Missing required field: roll_number' },
+  { row: 10, name: 'Lakshmi Prasad', email: 'lakshmi.p@university.edu', status: 'success' },
+  { row: 11, name: 'Yash Agarwal', email: 'yash.a@university.edu', status: 'success' },
+];
+
 function BulkUploadModal({ onClose }: { onClose: () => void }) {
   const CSV_COLUMNS = ['username', 'first_name', 'last_name', 'email', 'phone', 'password', 'roll_number', 'deb_id', 'aadhaar', 'programme_code', 'semester'];
+  const [stage, setStage] = useState<UploadStage>('idle');
+  const [fileName, setFileName] = useState('');
+  const [dragOver, setDragOver] = useState(false);
+  const [resultFilter, setResultFilter] = useState<'all' | 'success' | 'error'>('all');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const successCount = MOCK_UPLOAD_RESULTS.filter(r => r.status === 'success').length;
+  const errorCount = MOCK_UPLOAD_RESULTS.filter(r => r.status === 'error').length;
+  const filteredResults = resultFilter === 'all' ? MOCK_UPLOAD_RESULTS : MOCK_UPLOAD_RESULTS.filter(r => r.status === resultFilter);
+
+  function handleFile(file: File) {
+    if (!file.name.endsWith('.csv')) return;
+    setFileName(file.name);
+    setStage('file_selected');
+  }
+
+  function handleUpload() {
+    setStage('processing');
+    setTimeout(() => setStage('results'), 1800);
+  }
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ width: 520, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-        {/* Dark gradient header */}
-        <div style={{ background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)', padding: '20px 24px 18px' }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: 560, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)', overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+
+        {/* Header */}
+        <div style={{ background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)', padding: '20px 24px 18px', flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)', display: 'grid', placeItems: 'center' }}>
-                <Upload size={20} strokeWidth={1.8} style={{ color: '#fff' }} />
+                {stage === 'results'
+                  ? (errorCount === 0
+                    ? <CheckCircle2 size={20} strokeWidth={1.8} style={{ color: '#4ade80' }} />
+                    : <AlertTriangle size={20} strokeWidth={1.8} style={{ color: '#fbbf24' }} />)
+                  : <Upload size={20} strokeWidth={1.8} style={{ color: '#fff' }} />
+                }
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Bulk Upload Students</h3>
-                <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Upload a CSV file to create multiple student accounts</p>
+                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+                  {stage === 'results' ? 'Upload Complete' : 'Bulk Upload Students'}
+                </h3>
+                <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
+                  {stage === 'results'
+                    ? `${successCount} created · ${errorCount} failed out of ${MOCK_UPLOAD_RESULTS.length} rows`
+                    : 'Upload a CSV file to create multiple student accounts'}
+                </p>
               </div>
             </div>
             <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,0.7)', flexShrink: 0 }}><X size={16} /></button>
           </div>
         </div>
 
-        <div style={{ padding: '24px' }}>
-          {/* Drop zone */}
-          <div style={{
-            padding: '36px 20px', border: '2px dashed var(--border-subtle)', borderRadius: 'var(--radius-md)',
-            background: 'var(--bg-section)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-            cursor: 'pointer', marginBottom: 20, transition: 'border-color 0.12s',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--blue-700)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; }}
-          >
-            <Upload size={28} strokeWidth={1.3} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Drop CSV file here or click to browse</span>
-            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Maximum 500 students per upload</span>
-          </div>
+        {/* Body */}
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
 
-          {/* CSV template */}
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, letterSpacing: '0.03em', textTransform: 'uppercase' }}>Required CSV Format</div>
-          <div style={{ background: 'var(--bg-section)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', padding: '12px 14px', marginBottom: 12 }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.8, overflowX: 'auto', whiteSpace: 'nowrap' }}>
-              {CSV_COLUMNS.join(', ')}
+          {/* ── IDLE / FILE SELECTED ── */}
+          {(stage === 'idle' || stage === 'file_selected') && (
+            <>
+              <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
+
+              {/* Drop zone */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }}
+                style={{
+                  padding: stage === 'file_selected' ? '20px' : '36px 20px',
+                  border: `2px dashed ${dragOver ? 'var(--blue-700)' : stage === 'file_selected' ? '#059669' : 'var(--border-subtle)'}`,
+                  borderRadius: 'var(--radius-md)',
+                  background: stage === 'file_selected' ? 'rgba(5,150,105,0.04)' : dragOver ? 'rgba(7,47,181,0.03)' : 'var(--bg-section)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  cursor: 'pointer', marginBottom: 20, transition: 'all 0.12s',
+                }}
+              >
+                {stage === 'file_selected' ? (
+                  <>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(5,150,105,0.1)', display: 'grid', placeItems: 'center' }}>
+                      <FileCheck size={20} strokeWidth={1.8} style={{ color: '#059669' }} />
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#059669' }}>{fileName}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Click to change file</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={28} strokeWidth={1.3} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Drop CSV file here or click to browse</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Maximum 500 students per upload</span>
+                  </>
+                )}
+              </div>
+
+              {/* CSV format */}
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, letterSpacing: '0.03em', textTransform: 'uppercase' }}>Required CSV Format</div>
+              <div style={{ background: 'var(--bg-section)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', padding: '12px 14px', marginBottom: 12 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--text-secondary)', lineHeight: 1.8, overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                  {CSV_COLUMNS.join(', ')}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 16, lineHeight: 1.5 }}>
+                <div><strong style={{ color: 'var(--text-secondary)' }}>Required:</strong> username, first_name, last_name, email, password, roll_number, programme_code, semester</div>
+                <div><strong style={{ color: 'var(--text-secondary)' }}>Optional:</strong> phone, deb_id, aadhaar</div>
+                <div><strong style={{ color: 'var(--text-secondary)' }}>Programme codes:</strong> MBA-26, BCA-26, B.Tech CSE-26, MCA-26</div>
+              </div>
+              <button style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: 'var(--blue-700)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2 }}>
+                <Upload size={12} strokeWidth={2} /> Download CSV Template
+              </button>
+            </>
+          )}
+
+          {/* ── PROCESSING ── */}
+          {stage === 'processing' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '40px 0' }}>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', border: '3px solid var(--border-subtle)', borderTopColor: 'var(--blue-700)', animation: 'spin 0.75s linear infinite' }} />
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginBottom: 4 }}>Processing {fileName}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Validating rows and creating accounts…</div>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 16, lineHeight: 1.5 }}>
-            <div><strong style={{ color: 'var(--text-secondary)' }}>Required:</strong> username, first_name, last_name, email, password, roll_number, programme_code, semester</div>
-            <div><strong style={{ color: 'var(--text-secondary)' }}>Optional:</strong> phone, deb_id, aadhaar</div>
-            <div><strong style={{ color: 'var(--text-secondary)' }}>Programme codes:</strong> MBA-26, BCA-26, B.Tech CSE-26, MCA-26</div>
-          </div>
+          {/* ── RESULTS ── */}
+          {stage === 'results' && (
+            <>
+              {/* Summary pills */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
+                <div style={{ flex: 1, background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.18)', borderRadius: 'var(--radius-sm)', padding: '12px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: '#059669', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{successCount}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#059669', marginTop: 4 }}>Created</div>
+                </div>
+                <div style={{ flex: 1, background: errorCount > 0 ? 'rgba(220,38,38,0.05)' : 'rgba(5,150,105,0.04)', border: `1px solid ${errorCount > 0 ? 'rgba(220,38,38,0.18)' : 'rgba(5,150,105,0.12)'}`, borderRadius: 'var(--radius-sm)', padding: '12px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: errorCount > 0 ? '#DC2626' : '#059669', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{errorCount}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: errorCount > 0 ? '#DC2626' : '#059669', marginTop: 4 }}>Failed</div>
+                </div>
+                <div style={{ flex: 1, background: 'var(--bg-section)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', padding: '12px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{MOCK_UPLOAD_RESULTS.length}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', marginTop: 4 }}>Total Rows</div>
+                </div>
+              </div>
 
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
-            color: 'var(--blue-700)', background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: 'var(--font-sans)', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2,
-          }}>
-            <Upload size={12} strokeWidth={2} /> Download CSV Template
-          </button>
+              {/* Filter pills */}
+              <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                {(['all', 'success', 'error'] as const).map(f => (
+                  <button key={f} onClick={() => setResultFilter(f)} style={{
+                    padding: '4px 12px', fontSize: 11.5, fontWeight: 600, borderRadius: 'var(--radius-xs)',
+                    border: '1px solid',
+                    borderColor: resultFilter === f ? (f === 'error' ? 'rgba(220,38,38,0.3)' : f === 'success' ? 'rgba(5,150,105,0.3)' : 'rgba(7,47,181,0.25)') : 'var(--border-subtle)',
+                    color: resultFilter === f ? (f === 'error' ? '#DC2626' : f === 'success' ? '#059669' : 'var(--blue-700)') : 'var(--text-tertiary)',
+                    background: resultFilter === f ? (f === 'error' ? 'rgba(220,38,38,0.06)' : f === 'success' ? 'rgba(5,150,105,0.06)' : 'rgba(7,47,181,0.04)') : 'transparent',
+                    cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  }}>
+                    {f === 'all' ? `All (${MOCK_UPLOAD_RESULTS.length})` : f === 'success' ? `Created (${successCount})` : `Failed (${errorCount})`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Results table */}
+              <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '36px 1fr 32px', gap: 0, padding: '7px 12px', background: 'var(--bg-section)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Row</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Student</span>
+                  <span />
+                </div>
+                <div style={{ maxHeight: 240, overflowY: 'auto' }}>
+                  {filteredResults.map(r => (
+                    <div key={r.row} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 32px', alignItems: 'center', gap: 0, padding: '8px 12px', borderBottom: '1px solid rgba(0,0,0,0.03)', background: r.status === 'error' ? 'rgba(220,38,38,0.02)' : 'transparent' }}>
+                      <span style={{ fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)', fontWeight: 500 }}>{r.row}</span>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{r.name}</div>
+                        <div style={{ fontSize: 10.5, color: r.status === 'error' ? '#DC2626' : 'var(--text-tertiary)', fontWeight: 500, marginTop: 1 }}>
+                          {r.status === 'error' ? r.reason : r.email}
+                        </div>
+                      </div>
+                      {r.status === 'success'
+                        ? <CheckCircle2 size={14} strokeWidth={2} style={{ color: '#059669' }} />
+                        : <XCircle size={14} strokeWidth={2} style={{ color: '#DC2626' }} />
+                      }
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        <div style={{ padding: '14px 24px', background: '#FAFAFA', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-          <button onClick={onClose} style={{ padding: '8px 18px', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
-          <button disabled style={{
-            padding: '8px 22px', fontSize: 13, fontWeight: 700, color: '#fff',
-            background: 'var(--border-subtle)', border: 'none', borderRadius: 8,
-            cursor: 'not-allowed', fontFamily: 'var(--font-sans)',
-          }}>Upload & Create</button>
+        {/* Footer */}
+        <div style={{ padding: '14px 24px', background: '#FAFAFA', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+          {stage === 'results' ? (
+            <>
+              <button onClick={() => { setStage('idle'); setFileName(''); setResultFilter('all'); }} style={{ padding: '8px 16px', fontSize: 12.5, fontWeight: 600, color: 'var(--text-secondary)', background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Upload size={13} strokeWidth={2} /> Upload Another
+              </button>
+              <button onClick={onClose} style={{ padding: '8px 22px', fontSize: 13, fontWeight: 700, color: '#fff', background: '#059669', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Done</button>
+            </>
+          ) : (
+            <>
+              <button onClick={onClose} style={{ padding: '8px 18px', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+              <button onClick={handleUpload} disabled={stage !== 'file_selected'} style={{
+                padding: '8px 22px', fontSize: 13, fontWeight: 700, color: '#fff',
+                background: stage === 'file_selected' ? 'var(--blue-700)' : 'var(--border-subtle)',
+                border: 'none', borderRadius: 8, cursor: stage === 'file_selected' ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-sans)',
+              }}>Upload & Create</button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -954,21 +1116,31 @@ function BulkUploadModal({ onClose }: { onClose: () => void }) {
 export default function StudentsView() {
   const [students, setStudents] = useState(STUDENTS);
   const [searchQuery, setSearchQuery] = useState('');
-  const [programmeFilter, setProgrammeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [deleteConfirmIds, setDeleteConfirmIds] = useState<Set<string> | null>(null);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
+        setShowStatusDropdown(false);
+      }
+    }
+    if (showStatusDropdown) document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [showStatusDropdown]);
 
   // Filters
   const filtered = students.filter(s => {
-    if (programmeFilter !== 'all' && s.programmeCode !== programmeFilter) return false;
     if (statusFilter !== 'all' && s.status !== statusFilter) return false;
     if (searchQuery) {
       const sq = searchQuery.toLowerCase();
-      return s.name.toLowerCase().includes(sq) || s.rollNo.toLowerCase().includes(sq) || s.email.toLowerCase().includes(sq);
+      return s.name.toLowerCase().includes(sq) || (s.rollNo ?? '').toLowerCase().includes(sq) || s.email.toLowerCase().includes(sq);
     }
     return true;
   });
@@ -1003,35 +1175,57 @@ export default function StudentsView() {
           <Search size={13} strokeWidth={2.2} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }} />
         </div>
 
-        <select value={programmeFilter} onChange={e => setProgrammeFilter(e.target.value)} style={{
-          padding: '7px 28px 7px 10px', fontSize: 12, fontWeight: 600, color: programmeFilter !== 'all' ? 'var(--blue-700)' : 'var(--text-tertiary)',
-          background: programmeFilter !== 'all' ? 'rgba(7,47,181,0.05)' : '#fff',
-          border: `1px solid ${programmeFilter !== 'all' ? 'rgba(7,47,181,0.18)' : 'var(--border-subtle)'}`,
-          borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontFamily: 'var(--font-sans)', outline: 'none',
-          appearance: 'none', WebkitAppearance: 'none',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
-        }}>
-          <option value="all">All Programmes</option>
-          <option value="MBA-26">MBA - Batch 2026</option>
-          <option value="BCA-26">BCA - Batch 2026</option>
-          <option value="B.Tech CSE-26">B.Tech CSE - Batch 2026</option>
-        </select>
 
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{
-          padding: '7px 28px 7px 10px', fontSize: 12, fontWeight: 600, color: statusFilter !== 'all' ? 'var(--blue-700)' : 'var(--text-tertiary)',
-          background: statusFilter !== 'all' ? 'rgba(7,47,181,0.05)' : '#fff',
-          border: `1px solid ${statusFilter !== 'all' ? 'rgba(7,47,181,0.18)' : 'var(--border-subtle)'}`,
-          borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontFamily: 'var(--font-sans)', outline: 'none',
-          appearance: 'none', WebkitAppearance: 'none',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
-        }}>
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-          <option value="inactive">Inactive</option>
-        </select>
+<div style={{ position: 'relative' }} ref={statusDropdownRef}>
+          <button onClick={() => setShowStatusDropdown(v => !v)} style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 10px', fontSize: 12, fontWeight: 600,
+            color: statusFilter !== 'all' ? 'var(--blue-700)' : 'var(--text-tertiary)',
+            background: statusFilter !== 'all' ? 'rgba(7,47,181,0.05)' : '#fff',
+            border: `1px solid ${statusFilter !== 'all' ? 'rgba(7,47,181,0.18)' : 'var(--border-subtle)'}`,
+            borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+          }}>
+            {statusFilter === 'all' && <Users size={12} strokeWidth={2} style={{ opacity: 0.45, flexShrink: 0 }} />}
+            {statusFilter !== 'all' && <span style={{ width: 7, height: 7, borderRadius: '50%', background: statusFilter === 'active' ? '#059669' : statusFilter === 'new' ? '#072FB5' : '#D97706', flexShrink: 0, display: 'inline-block' }} />}
+            {statusFilter === 'all' ? 'All Status' : statusFilter === 'active' ? 'Active' : statusFilter === 'new' ? 'New' : 'Suspended'}
+            <ChevronDown size={11} strokeWidth={2.5} style={{ opacity: 0.45, flexShrink: 0, transition: 'transform 0.15s', transform: showStatusDropdown ? 'rotate(180deg)' : 'none' }} />
+          </button>
+          {showStatusDropdown && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
+              background: '#fff', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: 156, overflow: 'hidden',
+            }}>
+              {([
+                { value: 'all', label: 'All Status', color: null },
+                { value: 'active', label: 'Active', color: '#059669' },
+                { value: 'new', label: 'New', color: '#072FB5' },
+                { value: 'suspended', label: 'Suspended', color: '#D97706' },
+              ] as { value: string; label: string; color: string | null }[]).map(opt => {
+                const isSelected = statusFilter === opt.value;
+                return (
+                  <button key={opt.value} onClick={() => { setStatusFilter(opt.value); setShowStatusDropdown(false); }} style={{
+                    display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px',
+                    fontSize: 12, fontWeight: isSelected ? 700 : 500,
+                    color: isSelected ? 'var(--blue-700)' : 'var(--text-primary)',
+                    background: isSelected ? 'rgba(7,47,181,0.04)' : 'transparent',
+                    border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', textAlign: 'left',
+                  }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-section)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = isSelected ? 'rgba(7,47,181,0.04)' : 'transparent'; }}
+                  >
+                    {opt.color
+                      ? <span style={{ width: 8, height: 8, borderRadius: '50%', background: opt.color, flexShrink: 0, display: 'inline-block' }} />
+                      : <Users size={12} strokeWidth={2} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+                    }
+                    {opt.label}
+                    {isSelected && <Check size={12} strokeWidth={2.5} style={{ color: 'var(--blue-700)', marginLeft: 'auto' }} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {selectedIds.size > 0 && (
           <>
@@ -1104,7 +1298,11 @@ export default function StudentsView() {
                 <div style={{ width: 26, height: 26, borderRadius: '50%', background: student.status === 'suspended' ? '#D97706' + '15' : '#072FB5' + '10', display: 'grid', placeItems: 'center', fontSize: 9.5, fontWeight: 700, color: student.status === 'suspended' ? '#D97706' : '#072FB5', flexShrink: 0 }}>{student.initials}</div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{student.name}</span>
               </div>
-              <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{student.rollNo}</span>
+              {student.rollNo ? (
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{student.rollNo}</span>
+              ) : (
+                <span style={{ fontSize: 10.5, fontWeight: 600, color: '#D97706', background: 'rgba(217,119,6,0.08)', padding: '2px 8px', borderRadius: 'var(--radius-xs)', letterSpacing: '0.01em', whiteSpace: 'nowrap' }}>Not Enrolled</span>
+              )}
               <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{student.email}</span>
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500 }}>{student.programmeCode}</span>
               <StatusDot status={student.status} />

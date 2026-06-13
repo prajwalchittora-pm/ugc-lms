@@ -5,17 +5,17 @@ import Link from 'next/link';
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 
-interface UpcomingEvent { id: string; title: string; day: number; month: string; time?: string; type: 'exam' | 'assignment' | 'quiz' | 'live_session'; daysLeft: number; course?: string; context: string; href: string; }
+interface UpcomingEvent { id: string; title: string; day: number; month: string; time?: string; type: 'exam' | 'assignment' | 'quiz' | 'live_session'; daysLeft: number; course?: string; courseName?: string; programme?: string; context: string; href: string; }
 interface GradingItem { id: string; studentName: string; studentInitials: string; title: string; courseCode: string; submittedAt: string; gradeBy: string; overdue: boolean; }
 interface ForumPost { id: string; title: string; course: string; author: string; authorInitials: string; time: string; replies: number; }
 interface Announcement { id: string; title: string; body: string; programme: string; programmeLabel: string; time: string; pinned: boolean; }
 
 const UPCOMING: UpcomingEvent[] = [
-  { id: 'u1', title: 'Business Statistics Project Due', day: 8, month: 'Jun', time: '11:59 PM', type: 'assignment', daysLeft: 0, course: 'MBA-105', context: '4/20 submitted', href: '/coordinator/grading' },
-  { id: 'u2', title: 'Counselling Session — Managerial Economics', day: 9, month: 'Jun', time: '10:00 AM', type: 'live_session', daysLeft: 0, course: 'MBA-101', context: 'Dr. Anita Desai', href: '/coordinator/courses?course=MBA-101&activity=lp-ls2' },
-  { id: 'u3', title: 'Module 3 Quiz — Business Law', day: 10, month: 'Jun', time: '9:00 AM', type: 'quiz', daysLeft: 1, course: 'MBA-106', context: 'Published', href: '/coordinator/courses?course=MBA-101&activity=lp-10' },
-  { id: 'u4', title: 'End Sem — Managerial Economics', day: 15, month: 'Jun', time: '10:00 AM', type: 'exam', daysLeft: 6, course: 'MBA-101', context: '106/124 eligible', href: '/coordinator/exams' },
-  { id: 'u5', title: 'End Sem — Managerial Communication', day: 17, month: 'Jun', time: '10:00 AM', type: 'exam', daysLeft: 8, course: 'MBA-102', context: '118/124 eligible', href: '/coordinator/exams' },
+  { id: 'u1', title: 'Business Statistics Project Due', day: 8, month: 'Jun', time: '11:59 PM', type: 'assignment', daysLeft: 0, course: 'MBA-105', courseName: 'Business Statistics', programme: 'MBA - Batch 2026', context: '4/20 submitted', href: '/coordinator/grading' },
+  { id: 'u2', title: 'Counselling Session — Managerial Economics', day: 9, month: 'Jun', time: '10:00 AM', type: 'live_session', daysLeft: 0, course: 'MBA-101', courseName: 'Managerial Economics', programme: 'MBA - Batch 2026', context: 'Dr. Anita Desai', href: '/coordinator/courses?course=MBA-101&activity=lp-ls2' },
+  { id: 'u3', title: 'Module 3 Quiz — Business Law', day: 10, month: 'Jun', time: '9:00 AM', type: 'quiz', daysLeft: 1, course: 'MBA-106', courseName: 'Business Law & Ethics', programme: 'MBA - Batch 2026', context: 'Published', href: '/coordinator/courses?course=MBA-101&activity=lp-10' },
+  { id: 'u4', title: 'End Sem — Managerial Economics', day: 15, month: 'Jun', time: '10:00 AM', type: 'exam', daysLeft: 6, course: 'MBA-101', courseName: 'Managerial Economics', programme: 'MBA - Batch 2026', context: '106/124 eligible', href: '/coordinator/exams' },
+  { id: 'u5', title: 'End Sem — Managerial Communication', day: 17, month: 'Jun', time: '10:00 AM', type: 'exam', daysLeft: 8, course: 'MBA-102', courseName: 'Managerial Communication', programme: 'MBA - Batch 2026', context: '118/124 eligible', href: '/coordinator/exams' },
 ];
 
 // Sorted: overdue first, then by submission time (most recent first)
@@ -386,6 +386,24 @@ export default function Dashboard({ userName = 'Dr. Sharma' }: { userName?: stri
                       }}>
                         {event.title}
                       </div>
+
+                      {/* Programme + course breadcrumb */}
+                      {(event.programme || event.course) && (
+                        <div style={{ marginTop: 7, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                          {event.programme && (
+                            <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.04)', padding: '2px 6px', borderRadius: 4, whiteSpace: 'nowrap' }}>{event.programme}</span>
+                          )}
+                          {event.programme && event.course && (
+                            <span style={{ fontSize: 10, color: 'var(--text-tertiary)', opacity: 0.5 }}>·</span>
+                          )}
+                          {event.course && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>{event.course}</span>
+                          )}
+                          {event.courseName && (
+                            <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.courseName}</span>
+                          )}
+                        </div>
+                      )}
 
                       {/* Context line — actionable metric */}
                       <div style={{
