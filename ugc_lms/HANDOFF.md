@@ -1,6 +1,6 @@
 # UGC LMS — Developer Handoff Document
 
-> **Last updated:** 13 June 2026
+> **Last updated:** 13 June 2026 (Programmes edit/delete, Faculty page, Gradebook accordion, Students UX)
 > **Status:** Production frontend prototype — all UI complete, mock data throughout
 > **Your job:** Replace mock data with API calls. The UI is final.
 
@@ -81,11 +81,12 @@ Mentor reuses `AnnouncementsView` and `ForumsView` from coordinator (scoped to m
 /tickets             → ComingSoon
 ```
 
-### Coordinator (13 routes)
+### Coordinator (14 routes)
 ```
 /coordinator              → Dashboard (userName="Dr. Sharma")
 /coordinator/courses      → CoursesView (3-level: Programme List → Detail → CourseEditor)
 /coordinator/students     → StudentsView (list + Student 360 view)
+/coordinator/faculty      → FacultyView (faculty + mentor management, 4-status system)
 /coordinator/grading      → GradingView (submissions + plagiarism + feedback)
 /coordinator/gradebook    → GradebookView (grade scale + SGPA/CGPA + analytics)
 /coordinator/attendance   → AttendanceView (auto-marked + overrides)
@@ -196,6 +197,8 @@ paddingRight: '28px',
 - `GET /programmes` — programme list
 - `GET /programmes/:id/courses` — courses per semester
 - `POST /programmes` — create programme
+- `PUT /programmes/:id` — edit programme (name, code, type, semesters, credits, dates)
+- `DELETE /programmes/:id` — delete programme
 - `PUT /courses/:id/visibility` — hide/show
 - `PUT /courses/:id/lock` — lock with conditions
 - `POST /programmes/:id/students` — enroll students
@@ -204,10 +207,16 @@ paddingRight: '28px',
 ### 4.2 Students (StudentsView.tsx)
 
 **Student List:**
-- 12 mock students with search, programme filter, status filter
+- 14 mock students (2 with `rollNo: null` → shown as "Not Enrolled" amber badge — roll number is assigned at enrolment)
+- Search by name, email, or roll number (null-safe: `s.rollNo ?? ''`)
+- Status filter only (no programme filter dropdown — removed)
 - Multi-select with checkboxes for bulk delete
 - Create Student modal with UGC fields: username, name, email, phone, password, roll number, DEB ID, Aadhaar
-- Bulk Upload modal with CSV template
+- **Bulk Upload modal** — 4-stage state machine:
+  1. `idle` — CSV drop zone with drag-over highlight, format reference, Download Template link
+  2. `file_selected` — green border, file name shown, "Upload & Create" button enabled
+  3. `processing` — spinner animation (1800ms simulated delay)
+  4. `results` — summary pills (Created / Failed / Total), filter tabs (All / Created / Failed), scrollable results table with per-row status icon and error reason
 
 **Student 360 View (StudentDetail):**
 - **Left sidebar (260px, sticky):** Avatar + name (horizontal), last login (ago + date), last active (ago + date), gender, email + copy, phone + copy, programme card with credits, verification status (Aadhaar/Photo/DEB ID/Govt ID), suspend/delete actions
@@ -522,14 +531,15 @@ These rules are embedded in the UI logic and must be preserved:
 ```
 components/
 ├── coordinator/
-│   ├── CoordinatorSideNav.tsx    # Sidenav (11 tabs)
+│   ├── CoordinatorSideNav.tsx    # Sidenav (12 tabs)
 │   ├── Dashboard.tsx             # Home — shared with faculty via userName prop
-│   ├── CoursesView.tsx           # 3-level programme management
+│   ├── CoursesView.tsx           # 3-level programme management + Edit/Delete per row
 │   ├── CourseEditor.tsx          # WYSIWYG course content editor
 │   ├── AddActivityModal.tsx      # Activity creation (7 types)
-│   ├── StudentsView.tsx          # Student list + 360 view
+│   ├── StudentsView.tsx          # Student list + 360 view + Not Enrolled state + Bulk Upload
+│   ├── FacultyView.tsx           # Faculty + Mentor management, 4-status system, RowActionsMenu
 │   ├── GradingView.tsx           # Submission grading + plagiarism
-│   ├── GradebookView.tsx         # Grade scale + SGPA/CGPA
+│   ├── GradebookView.tsx         # Grade scale + SGPA/CGPA + semester credit accordion
 │   ├── AttendanceView.tsx        → imported from faculty/AttendanceView.tsx
 │   ├── ExamsView.tsx             # Exam schedule + eligibility + results
 │   ├── ScheduleView.tsx          # Unified event timeline

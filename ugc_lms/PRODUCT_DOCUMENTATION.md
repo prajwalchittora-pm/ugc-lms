@@ -283,15 +283,19 @@ A table showing all programmes the user manages.
 **Actions:**
 - Search bar
 - "Create Programme" button → modal
+- Per-row three-dot menu (⋮) → **Edit** or **Delete**
+  - Edit opens a pre-filled modal (same fields as Create); saves in place
+  - Delete removes the programme immediately (client-side; real API must guard against deleting active programmes with enrolled students)
+  - Menu uses outside-click dismiss; clicking it does NOT trigger row navigation (`stopPropagation`)
 
-**Create Programme Modal fields:**
-- Programme Name (text)
-- Programme Code (text, auto-generated suggestion)
+**Create / Edit Programme Modal fields:**
+- Programme Name (text, hero field in dark gradient header)
+- Programme Code (monospace, e.g. "MBA")
 - Batch Year (number)
+- Start Date / End Date (segmented DD/MM/YYYY inputs)
 - Type (UG / PG / Diploma / Certificate)
 - Total Semesters (number)
 - Total Credits (number)
-- Live preview of how the programme will appear
 
 ---
 
