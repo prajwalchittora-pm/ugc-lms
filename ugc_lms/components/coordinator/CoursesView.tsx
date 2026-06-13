@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, ChevronRight, ChevronDown, MonitorPlay, BookOpenText, MessageSquare, ClipboardCheck, Video, CheckCircle2, AlertTriangle, Plus, GraduationCap, Users, BookOpen, X, Clock, CalendarRange, Filter, Upload, UserPlus, ShieldCheck, Mail, Check, GripVertical, Eye, EyeOff, Lock, Unlock } from 'lucide-react';
+import { Search, ChevronRight, ChevronDown, MonitorPlay, BookOpenText, MessageSquare, ClipboardCheck, Video, CheckCircle2, AlertTriangle, Plus, GraduationCap, Users, BookOpen, X, Clock, CalendarRange, Filter, Upload, UserPlus, ShieldCheck, Mail, Check, GripVertical, Eye, EyeOff, Lock, Unlock, Settings } from 'lucide-react';
 import { PROGRAMME_BATCHES, ProgrammeBatch, CoordinatorCourse, ProgrammeType, getProgrammeTypeColor } from '@/lib/coordinatorData';
 import CourseEditor from './CourseEditor';
 
@@ -154,12 +154,102 @@ function Breadcrumb({ items }: { items: { label: string; onClick?: () => void }[
   );
 }
 
+// ─── Segmented Date Input ────────────────────────────────────────────────────
+
+function SegmentedDateInput({ label, value, onChange }: {
+  label: string; value: string; onChange: (v: string) => void;
+}) {
+  const [day, setDay] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
+  const monthRef = useRef<HTMLInputElement>(null);
+  const yearRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (value) {
+      const [y, m, d] = value.split('-');
+      setYear(y || ''); setMonth(m || ''); setDay(d || '');
+    } else {
+      setDay(''); setMonth(''); setYear('');
+    }
+  }, [value]);
+
+  const emit = (d: string, m: string, y: string) => {
+    if (d.length === 2 && m.length === 2 && y.length === 4) onChange(`${y}-${m}-${d}`);
+    else if (!d && !m && !y) onChange('');
+  };
+
+  const handleDay = (v: string) => {
+    const n = v.replace(/\D/g, '').slice(0, 2);
+    setDay(n); emit(n, month, year);
+    if (n.length === 2) monthRef.current?.focus();
+  };
+  const handleMonth = (v: string) => {
+    const n = v.replace(/\D/g, '').slice(0, 2);
+    setMonth(n); emit(day, n, year);
+    if (n.length === 2) yearRef.current?.focus();
+  };
+  const handleYear = (v: string) => {
+    const n = v.replace(/\D/g, '').slice(0, 4);
+    setYear(n); emit(day, month, n);
+  };
+
+  const segBase: React.CSSProperties = {
+    padding: '9px 0', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)',
+    color: 'var(--text-primary)', background: 'var(--bg-section)',
+    border: '1.5px solid transparent', borderRadius: 8, outline: 'none',
+    textAlign: 'center', transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+    boxSizing: 'border-box' as const,
+  };
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.currentTarget.style.borderColor = '#072FB5';
+    e.currentTarget.style.background = '#fff';
+    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(7,47,181,0.12)';
+  };
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.currentTarget.style.borderColor = 'transparent';
+    e.currentTarget.style.background = 'var(--bg-section)';
+    e.currentTarget.style.boxShadow = 'none';
+  };
+  const segLabel: React.CSSProperties = {
+    fontSize: 9, fontWeight: 700, color: 'var(--text-tertiary)',
+    letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 5,
+  };
+
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>{label}</label>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={segLabel}>Day</span>
+          <input value={day} onChange={e => handleDay(e.target.value)} placeholder="DD"
+            inputMode="numeric" style={{ ...segBase, width: 48 }} onFocus={onFocus} onBlur={onBlur} />
+        </div>
+        <span style={{ fontSize: 16, fontWeight: 300, color: 'var(--text-tertiary)', padding: '0 5px', paddingBottom: 10 }}>/</span>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={segLabel}>Month</span>
+          <input ref={monthRef} value={month} onChange={e => handleMonth(e.target.value)} placeholder="MM"
+            inputMode="numeric" style={{ ...segBase, width: 48 }} onFocus={onFocus} onBlur={onBlur} />
+        </div>
+        <span style={{ fontSize: 16, fontWeight: 300, color: 'var(--text-tertiary)', padding: '0 5px', paddingBottom: 10 }}>/</span>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={segLabel}>Year</span>
+          <input ref={yearRef} value={year} onChange={e => handleYear(e.target.value)} placeholder="YYYY"
+            inputMode="numeric" style={{ ...segBase, width: 68 }} onFocus={onFocus} onBlur={onBlur} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Create Programme Modal ─────────────────────────────────────────────────
 
 function CreateProgrammeModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p: ProgrammeBatch) => void }) {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [batchYear, setBatchYear] = useState('2026');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [type, setType] = useState<ProgrammeType>('PG');
   const [semesters, setSemesters] = useState('4');
   const [credits, setCredits] = useState('80');
@@ -177,7 +267,7 @@ function CreateProgrammeModal({ onClose, onCreate }: { onClose: () => void; onCr
       type, status: 'upcoming',
       totalSemesters: numSems, currentSemester: 0, totalCredits: totalCreds,
       students: 0, avgEngagement: 0, avgGrade: 0, contentReadiness: 0, faculty: 0,
-      color: getProgrammeTypeColor(type), startDate: 'TBD', endDate: 'TBD',
+      color: getProgrammeTypeColor(type), startDate: startDate || 'TBD', endDate: endDate || 'TBD',
       semesters: Array.from({ length: numSems }, (_, i) => ({
         id: `new-s${i + 1}-${Date.now()}`, number: i + 1, label: `Semester ${i + 1}`,
         credits: Math.round(totalCreds / numSems), courses: [], status: 'upcoming' as const,
@@ -197,9 +287,9 @@ function CreateProgrammeModal({ onClose, onCreate }: { onClose: () => void; onCr
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ width: 540, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: 540, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)' }}>
         {/* Dark gradient header */}
-        <div style={{ padding: '24px 28px 22px', background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)' }}>
+        <div style={{ padding: '24px 28px 22px', background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)', borderRadius: '16px 16px 0 0' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)', display: 'grid', placeItems: 'center' }}>
@@ -247,6 +337,10 @@ function CreateProgrammeModal({ onClose, onCreate }: { onClose: () => void; onCr
                 onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'var(--bg-section)'; }}
               />
             </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <SegmentedDateInput label="Start Date" value={startDate} onChange={setStartDate} />
+            <SegmentedDateInput label="End Date" value={endDate} onChange={setEndDate} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
             <div>
@@ -382,11 +476,11 @@ function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCr
       <div style={{ background: '#fff', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
         {/* Header */}
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 72px 24px',
+          display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 24px',
           alignItems: 'center', gap: 0, padding: '9px 20px',
           borderBottom: '1px solid var(--border-subtle)',
         }}>
-          {['Programme', 'Timeline', 'Status', 'Duration', 'Sem', 'Students', ''].map(h => (
+          {['Programme', 'Timeline', 'Status', 'Duration', 'Sem', ''].map(h => (
             <span key={h} style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em', textTransform: 'uppercase', fontFamily: 'var(--font-sans)' }}>{h}</span>
           ))}
         </div>
@@ -402,7 +496,7 @@ function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCr
               key={prog.id}
               onClick={() => onSelect(prog)}
               style={{
-                display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 72px 24px',
+                display: 'grid', gridTemplateColumns: '1fr 140px 90px 72px 56px 24px',
                 alignItems: 'center', gap: 0, padding: '14px 20px',
                 borderBottom: i < filtered.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
                 cursor: 'pointer', transition: 'background 0.1s',
@@ -448,11 +542,6 @@ function ProgrammeList({ programmes, searchQuery, onSearchChange, onSelect, onCr
 
               {/* Semesters */}
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{prog.totalSemesters}</span>
-
-              {/* Students */}
-              <span style={{ fontSize: 13, fontWeight: 700, color: isUpcoming ? 'var(--text-tertiary)' : 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                {isUpcoming ? '--' : prog.students}
-              </span>
 
               {/* Arrow */}
               <ChevronRight size={14} strokeWidth={1.8} style={{ color: 'var(--text-tertiary)', opacity: 0.3 }} />
@@ -665,6 +754,10 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
   const [newCourseName, setNewCourseName] = useState('');
   const [newCourseCode, setNewCourseCode] = useState('');
   const [newCourseCredits, setNewCourseCredits] = useState('4');
+  const [newCourseStartDate, setNewCourseStartDate] = useState('');
+  const [newCourseEndDate, setNewCourseEndDate] = useState('');
+  const [settingsCourse, setSettingsCourse] = useState<CoordinatorCourse | null>(null);
+  const [courseSettingsMap, setCourseSettingsMap] = useState<Record<string, { startDate: string; endDate: string; name: string; credits: string; status: string }>>({});
   const [hiddenCourses, setHiddenCourses] = useState<Set<string>>(new Set());
   const [lockedCourses, setLockedCourses] = useState<Set<string>>(new Set());
   const [lockConditions, setLockConditions] = useState<Record<string, { type: string; label: string }>>({});
@@ -717,6 +810,7 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
     if (activeSem) activeSem.courses.push(newCourse);
     setShowAddCourse(false);
     setNewCourseName(''); setNewCourseCode(''); setNewCourseCredits('4');
+    setNewCourseStartDate(''); setNewCourseEndDate('');
   };
 
   const activeSem = programme.semesters.find(s => s.id === activeSemId);
@@ -999,27 +1093,39 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
                       )}
                       {/* Hide/Show */}
                       <button onClick={e => { e.stopPropagation(); toggleHidden(course.id); }} title={isHidden ? 'Show to learners' : 'Hide from learners'} style={{
-                        width: 22, height: 22, display: 'grid', placeItems: 'center',
-                        background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: 4,
-                        color: isHidden ? '#D97706' : 'var(--text-tertiary)', opacity: isHidden ? 0.8 : 0.3,
+                        width: 26, height: 26, display: 'grid', placeItems: 'center',
+                        background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: 5,
+                        color: isHidden ? '#D97706' : 'var(--text-secondary)', opacity: isHidden ? 1 : 0.65,
                         transition: 'opacity 0.12s, background 0.12s',
                       }}
                         onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--bg-section)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.opacity = isHidden ? '0.8' : '0.3'; e.currentTarget.style.background = 'transparent'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = isHidden ? '1' : '0.65'; e.currentTarget.style.background = 'transparent'; }}
                       >
-                        {isHidden ? <EyeOff size={13} strokeWidth={1.8} /> : <Eye size={13} strokeWidth={1.8} />}
+                        {isHidden ? <EyeOff size={15} strokeWidth={1.8} /> : <Eye size={15} strokeWidth={1.8} />}
                       </button>
                       {/* Lock/Unlock */}
                       <button onClick={e => { e.stopPropagation(); setShowLockPopover(showLockPopover === course.id ? null : course.id); }} title={isLocked ? 'Locked' : 'Unlocked'} style={{
-                        width: 22, height: 22, display: 'grid', placeItems: 'center',
-                        background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: 4,
-                        color: isLocked ? '#DC2626' : 'var(--text-tertiary)', opacity: isLocked ? 0.8 : 0.3,
+                        width: 26, height: 26, display: 'grid', placeItems: 'center',
+                        background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: 5,
+                        color: isLocked ? '#DC2626' : 'var(--text-secondary)', opacity: isLocked ? 1 : 0.65,
                         transition: 'opacity 0.12s, background 0.12s',
                       }}
                         onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--bg-section)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.opacity = isLocked ? '0.8' : '0.3'; e.currentTarget.style.background = 'transparent'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = isLocked ? '1' : '0.65'; e.currentTarget.style.background = 'transparent'; }}
                       >
-                        {isLocked ? <Lock size={12} strokeWidth={2} /> : <Unlock size={12} strokeWidth={1.8} />}
+                        {isLocked ? <Lock size={14} strokeWidth={2} /> : <Unlock size={14} strokeWidth={1.8} />}
+                      </button>
+                      {/* Settings */}
+                      <button onClick={e => { e.stopPropagation(); setSettingsCourse(course); }} title="Course settings" style={{
+                        width: 26, height: 26, display: 'grid', placeItems: 'center',
+                        background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: 5,
+                        color: 'var(--text-secondary)', opacity: 0.65,
+                        transition: 'opacity 0.12s, background 0.12s',
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--bg-section)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = '0.65'; e.currentTarget.style.background = 'transparent'; }}
+                      >
+                        <Settings size={14} strokeWidth={1.8} />
                       </button>
                       {/* Order */}
                       <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-tertiary)', opacity: 0.35, fontFamily: 'var(--font-display)', lineHeight: 1, width: 20, textAlign: 'right' }}>{idx + 1}</span>
@@ -1388,9 +1494,9 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
       {/* Add course modal */}
       {showAddCourse && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} onClick={() => setShowAddCourse(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 480, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 480, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)' }}>
             {/* Dark gradient header */}
-            <div style={{ padding: '24px 28px 22px', background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)' }}>
+            <div style={{ padding: '24px 28px 22px', background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)', borderRadius: '16px 16px 0 0' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)', display: 'grid', placeItems: 'center' }}>
@@ -1417,7 +1523,8 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
             </div>
 
             {/* Body */}
-            <div style={{ padding: '22px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ padding: '22px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Course Code <span style={{ color: '#072FB5' }}>*</span></label>
                 <input type="text" placeholder="e.g. MBA-107" value={newCourseCode} onChange={e => setNewCourseCode(e.target.value)} style={{
@@ -1444,6 +1551,11 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
                   onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'var(--bg-section)'; }}
                 />
               </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SegmentedDateInput label="Start Date" value={newCourseStartDate} onChange={setNewCourseStartDate} />
+                <SegmentedDateInput label="End Date" value={newCourseEndDate} onChange={setNewCourseEndDate} />
+              </div>
             </div>
 
             {/* Footer */}
@@ -1460,6 +1572,68 @@ function ProgrammeDetail({ programme, searchQuery, onSelectCourse }: {
           </div>
         </div>
       )}
+
+      {/* Course Settings Modal */}
+      {settingsCourse && (() => {
+        const s = courseSettingsMap[settingsCourse.id] ?? { name: settingsCourse.title, credits: String(settingsCourse.credits), status: settingsCourse.status, startDate: '', endDate: '' };
+        const setField = (field: string, v: string) => setCourseSettingsMap(p => ({ ...p, [settingsCourse!.id]: { ...s, [field]: v } }));
+        const inputStyle: React.CSSProperties = {
+          width: '100%', padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-sans)', fontWeight: 500,
+          color: 'var(--text-primary)', background: 'var(--bg-section)', border: '1.5px solid transparent',
+          borderRadius: 8, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s, box-shadow 0.15s, background 0.15s',
+        };
+        const onFocusI = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.currentTarget.style.borderColor = '#072FB5'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(7,47,181,0.12)'; e.currentTarget.style.background = '#fff'; };
+        const onBlurI = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'var(--bg-section)'; };
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 110, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} onClick={() => setSettingsCourse(null)}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 480, background: '#fff', borderRadius: 16, boxShadow: '0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06)' }}>
+              {/* Header */}
+              <div style={{ padding: '20px 24px 18px', background: 'linear-gradient(135deg, #030B22 0%, #06102E 50%, #213594 100%)', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)', display: 'grid', placeItems: 'center' }}>
+                    <Settings size={18} strokeWidth={1.8} style={{ color: '#fff' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Course Settings</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>{settingsCourse.code}</div>
+                  </div>
+                </div>
+                <button onClick={() => setSettingsCourse(null)} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,0.5)' }}><X size={16} /></button>
+              </div>
+              {/* Body */}
+              <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Course Name</label>
+                  <input value={s.name} onChange={e => setField('name', e.target.value)} style={inputStyle} onFocus={onFocusI} onBlur={onBlurI} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Credits</label>
+                    <input type="number" value={s.credits} onChange={e => setField('credits', e.target.value)} style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontWeight: 700 }} onFocus={onFocusI} onBlur={onBlurI} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Status</label>
+                    <select value={s.status} onChange={e => setField('status', e.target.value)} style={{ ...inputStyle, cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center', paddingRight: 28 }} onFocus={onFocusI} onBlur={onBlurI}>
+                      <option value="upcoming">Upcoming</option>
+                      <option value="active">Active</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <SegmentedDateInput label="Start Date" value={s.startDate} onChange={v => setField('startDate', v)} />
+                  <SegmentedDateInput label="End Date" value={s.endDate} onChange={v => setField('endDate', v)} />
+                </div>
+              </div>
+              {/* Footer */}
+              <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8, background: '#FAFAFA', borderRadius: '0 0 16px 16px' }}>
+                <button onClick={() => setSettingsCourse(null)} style={{ padding: '9px 20px', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+                <button onClick={() => setSettingsCourse(null)} style={{ padding: '9px 24px', fontSize: 13, fontWeight: 700, color: '#fff', background: '#072FB5', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-sans)', boxShadow: '0 2px 8px rgba(7,47,181,0.3)' }}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 }
